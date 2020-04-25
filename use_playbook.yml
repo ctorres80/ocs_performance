@@ -1,0 +1,6 @@
+---
+- name: 'Using ansible rbd_ceph_performance role'
+  hosts: clients
+  become: true
+  roles:
+    - rbd_ceph_performance

@@ -1,0 +1,23 @@
+---
+# pool name
+pool_name: 'rbd'
+# rbd name
+rbd_name: 'volume_testing'
+# rbd size
+rbd_size: '5G'
+# valid rw, write, read
+io_type: 'rw'
+# valid 4K, 8K, 16K, 32K, 64K, 128K, 256K
+io_size: '64K'
+# valid power of 2
+io_threads: '1'
+# valid whatever size in G
+io_total: '3G'
+# valid seq, rand
+io_pattern: 'rand'
+# rwmin if=0 means that rwmix is excluded
+rw_mix_read: 50
+# rbd image name
+rbd_image_name: '{{ rbd_name }}_{{ ansible_hostname }}'
+# path for fio files
+path_fio_files: '/root/ceph_performance'

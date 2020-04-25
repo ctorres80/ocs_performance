@@ -1,0 +1,64 @@
+- name: Preparation tasks
+  block:
+    - name: Create a ceph-performance directory if it does not exist
+      file:
+        path: "{{ path_fio_files }}"
+        state: directory
+
+    - name: Create rbd volumes in ceph
+      shell:
+        cmd: rbd create --size {{ rbd_size }} {{ pool_name }}/{{ rbd_image_name }}
+      ignore_errors: True
+
+- name: Pool status before rbd bench
+  shell: |
+    ceph df | egrep "%USED|{{ pool_name }}"
+  register: pool_status
+  run_once: true
+
+- name: Print pool status before rbd bench
+  debug:
+    msg: "{{ pool_status.stdout.split('\n') }}"
+  run_once: true
+
+- name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}'
+  shell: |
+    rbd bench {{ pool_name }}/{{ rbd_image_name }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}
+  register: rados_bench_out
+  when: io_type == "rw"
+
+- name: Print rbd bench results
+  debug:
+    msg: "{{ rados_bench_out.stdout.split('\n') }}"
+  when: io_type == "rw"
+
+- name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }}'
+  shell: |
+    rbd bench {{ pool_name }}/{{ rbd_image_name }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }}
+  register: rados_bench_out
+  when: io_type == "read" or io_type == "write"
+
+- name: Print rbd bench results
+  debug:
+    msg: "{{ rados_bench_out.stdout.split('\n') }}"
+  when: io_type == "read" or io_type == "write"
+
+- name: Pool status after rbd bench
+  shell: |
+    ceph df | egrep "%USED|{{ pool_name }}"
+  register: pool_status
+  run_once: true
+- name: Print pool status after rbd bench
+  debug:
+    msg: "{{ pool_status.stdout.split('\n') }}"
+  run_once: true
+
+# Pause for 60 to flush cache or bluestore transactions
+- name: Wating for 30 secs to flush cache and bluestore operations before delete the rbd images
+  pause:
+    seconds: 30
+
+- name: Delete rbd testing volumes in ceph
+  shell:
+    cmd: rbd rm {{ pool_name }}/{{ rbd_image_name }}
+  ignore_errors: True

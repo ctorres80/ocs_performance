@@ -1,0 +1,18 @@
+[global]
+ioengine=rbd
+clientname=admin
+pool=rbd
+rbdname={{ ansible_hostname }}_256k
+filename=fio-{{ ansible_hostname }}_256k
+rw=randrw
+rwmixread=50
+bs=256k
+buffered=0
+runtime=300
+direct=1
+numjobs=1
+
+[64k-rand_readwrite]
+size=1G
+iodepth=1
+time_based
