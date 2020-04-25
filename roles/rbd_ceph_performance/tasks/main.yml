@@ -1,4 +1,37 @@
  ---
+- pause:
+    prompt: |
+          Valid I/O type
+          rw
+          write
+          read
+  register: io_type
+
+- pause:
+    prompt: |
+          Valid I/O size example: 4K, 8K, 16K, 32K, 64K, 128K, 256K, 1024K, 4096K
+  register: io_size
+
+- pause:
+    prompt: |
+          Valid io_threads are power of 2, example: 1, 2, 4, 8, 16, 32, 64, 128
+  register: io_threads
+
+- pause:
+    prompt: |
+          IO total in G, up to 198G, example: 1G, 10G, 100G, 200G
+  register: io_total
+
+- pause:
+    prompt: |
+          IO pattern, valid rand(random), seq(sequential) example: rand
+  register: io_pattern
+
+- pause:
+    prompt: |
+          IO rw_mix_read, valid integer from 10 to 90, example: 50
+  register: rw_mix_read
+
  - name: Let's create 3 pvcs block with storage class ocs-storagecluster-ceph-rbd
   shell: |
     sed -i '5d' {{ pvc_yml }}
@@ -15,14 +48,13 @@
 
 - name: Pool status before rbd bench
   shell: |
-    ceph df | egrep "%USED|{{ pool_name }}"
+    TOOLS_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
+    oc exec -n {{ name_space }} $TOOLS_POD -it -- rados df
   register: pool_status
-  run_once: true
 
 - name: Print pool status before rbd bench
   debug:
     msg: "{{ pool_status.stdout.split('\n') }}"
-  run_once: true
 
 - name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}'
   shell: |
