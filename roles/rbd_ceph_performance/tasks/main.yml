@@ -32,7 +32,7 @@
           IO rw_mix_read, valid integer from 10 to 90, example: 50
   register: rw_mix_read
 
- - name: Let's create 3 pvcs block with storage class ocs-storagecluster-ceph-rbd
+- name: Let's create 3 pvcs block with storage class ocs-storagecluster-ceph-rbd
   shell: |
     sed -i '5d' {{ pvc_yml }}
     sed -i '/  - ReadWrite/d' {{ pvc_yml }}
@@ -56,60 +56,76 @@
   debug:
     msg: "{{ pool_status.stdout.split('\n') }}"
 
-- name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}'
+- name: 'Collect rbd image names'
+  shell: |
+    oc get pv -n {{ name_space }} -o name -o=jsonpath='{range .items[?(@.spec.claimRef.name=="{{ pvc }}-{{ item }}")]}{.spec.csi.volumeHandle}{"\n"}{end}' | cut -d'-' -f6-
+#    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
+#    tool_pods=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+#     oc exec -n {{ name_space }} $TOOLS_POD -it -- rbd bench {{ pool_name }}/{{ pvc }}-{{ item }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}
+  with_sequence: start=1 end=3
+  register: rbd_images
+
+- name: Print rbdimages
+  debug:
+    msg: "{{ rbd_images.stdout.split('\n') }}"
+
+#- name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}'
+#  shell: |
+#    oc get pv -n torage -o name -o=jsonpath='{range .items[?(@.spec.claimRef.name=="db-noobaa-db-0")]}{.spec.csi.volumeHandle}{"\n"}{end}'
+#    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
+#    tool_pods=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+#     oc exec -n {{ name_space }} $TOOLS_POD -it -- rbd bench {{ pool_name }}/{{ pvc }}-{{ item }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}
+#  with_sequence: start=1 end=3
+#  when: io_type == "rw"
+#  register: rados_bench_out
+#  async: 600  # Maximum runtime in seconds. Adjust as needed.
+#  poll: 0  # Fire and continue (never poll)
+  
+#- name: Wait for rbd jobs to finish
+#  async_status:
+#    jid: "{{ item.ansible_job_id }}"
+#  register: _jobs
+#  until: _jobs.finished
+#  delay: 5  # Check every 5 seconds. Adjust as you like.
+#  retries: 10  # Retry up to 10 times. Adjust as needed.
+#  with_items: "{{ _create_instances.results }}"
+
+- name: Print rbd bench results
+  debug:
+    msg: "{{ rados_bench_out.stdout.split('\n') }}"
+  when: io_type == "rw"
+
+#- name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }}'
+#  shell: |
+#    rbd bench {{ pool_name }}/{{ rbd_image_name }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }}
+#  register: rados_bench_out
+#  when: io_type == "read" or io_type == "write"
+
+#- name: Print rbd bench results
+#  debug:
+#    msg: "{{ rados_bench_out.stdout.split('\n') }}"
+#  when: io_type == "read" or io_type == "write"
+
+- name: Pool status before rbd bench
   shell: |
     TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
-    tool_pods=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
-      oc exec -n {{ name_space }} $TOOLS_POD -it -- rbd bench {{ pool_name }}/{{ pvc }}-{{ item }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}
-  with_sequence: start=1 end=3
-  when: io_type == "rw"
-  register: rados_bench_out
-  async: 600  # Maximum runtime in seconds. Adjust as needed.
-  poll: 0  # Fire and continue (never poll)
-
-  # oc get pv -n openshift-storage -o name -o=jsonpath='{range .items[?(@.spec.claimRef.name=="db-noobaa-db-0")]}{.spec.csi.volumeHandle}{"\n"}{end}'
-
-- name: Wait for rbd jobs to finish
-  async_status:
-    jid: "{{ item.ansible_job_id }}"
-  register: _jobs
-  until: _jobs.finished
-  delay: 5  # Check every 5 seconds. Adjust as you like.
-  retries: 10  # Retry up to 10 times. Adjust as needed.
-  with_items: "{{ _create_instances.results }}"
-
-- name: Print rbd bench results
-  debug:
-    msg: "{{ rados_bench_out.stdout.split('\n') }}"
-  when: io_type == "rw"
-
-- name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }}'
-  shell: |
-    rbd bench {{ pool_name }}/{{ rbd_image_name }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }}
-  register: rados_bench_out
-  when: io_type == "read" or io_type == "write"
-
-- name: Print rbd bench results
-  debug:
-    msg: "{{ rados_bench_out.stdout.split('\n') }}"
-  when: io_type == "read" or io_type == "write"
-
-- name: Pool status after rbd bench
-  shell: |
-    ceph df | egrep "%USED|{{ pool_name }}"
+    oc exec -n {{ name_space }} $TOOLS_POD -it -- rados df
   register: pool_status
-  run_once: true
-- name: Print pool status after rbd bench
+
+- name: Print pool status before rbd bench
   debug:
     msg: "{{ pool_status.stdout.split('\n') }}"
-  run_once: true
 
-# Pause for 60 to flush cache or bluestore transactions
-- name: Wating for 30 secs to flush cache and bluestore operations before delete the rbd images
-  pause:
-    seconds: 30
-
-- name: Delete rbd testing volumes in ceph
-  shell:
-    cmd: rbd rm {{ pool_name }}/{{ rbd_image_name }}
-  ignore_errors: True
+- name: Let's create 500 pvcs block with storage class ocs-storagecluster-ceph-rbd
+  shell: |
+    sed -i '5d' {{ pvc_yml }}
+    sed -i '/  - ReadWrite/d' {{ pvc_yml }}
+    sed -i '$d' {{ pvc_yml }}
+    sed -i '/metadata:/a \ \ name: {{ pvc }}-{{ item }}' {{ pvc_yml }}
+    sed -i '/\ \ accessModes:/a \ \ - ReadWriteOnce' {{ pvc_yml }}
+    sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-ceph-rbd' {{ pvc_yml }}
+    oc -n openshift-storage delete -f {{ pvc_yml }}
+  args:
+    warn: false
+  with_sequence: start=1 end=3
+  ignore_errors: yes
