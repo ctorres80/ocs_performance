@@ -48,7 +48,7 @@
 
 - name: Pool status before rbd bench
   shell: |
-    TOOLS_POD=$(oc get pods -n openshift-storage -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
+    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
     oc exec -n {{ name_space }} $TOOLS_POD -it -- rados df
   register: pool_status
 
@@ -58,9 +58,25 @@
 
 - name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}'
   shell: |
-    rbd bench {{ pool_name }}/{{ rbd_image_name }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}
-  register: rados_bench_out
+    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
+    tool_pods=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+      oc exec -n {{ name_space }} $TOOLS_POD -it -- rbd bench {{ pool_name }}/{{ pvc }}-{{ item }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}
+  with_sequence: start=1 end=3
   when: io_type == "rw"
+  register: rados_bench_out
+  async: 600  # Maximum runtime in seconds. Adjust as needed.
+  poll: 0  # Fire and continue (never poll)
+
+  # oc get pv -n openshift-storage -o name -o=jsonpath='{range .items[?(@.spec.claimRef.name=="db-noobaa-db-0")]}{.spec.csi.volumeHandle}{"\n"}{end}'
+
+- name: Wait for rbd jobs to finish
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: _jobs
+  until: _jobs.finished
+  delay: 5  # Check every 5 seconds. Adjust as you like.
+  retries: 10  # Retry up to 10 times. Adjust as needed.
+  with_items: "{{ _create_instances.results }}"
 
 - name: Print rbd bench results
   debug:
