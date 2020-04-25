@@ -1,22 +1,17 @@
-- name: Preparation tasks
-  block:
-    - name: Create a ceph-performance directory if it does not exist
-      file:
-        path: "{{ path_fio_files }}"
-        state: directory
-  
-- name: Let's create 3 pvcs block with storage class ocs-storagecluster-ceph-rbd
+ ---
+ - name: Let's create 3 pvcs block with storage class ocs-storagecluster-ceph-rbd
   shell: |
-    sed -i '5d' ./roles/rbd_ceph_performance/templates/pvc.yml
-    sed -i '/  - ReadWrite/d' ./pvc.yaml
-    sed -i '$d' ./pvc.yaml
-    sed -i '/metadata:/a \ \ name: rbd-pvc-{{ item }}' ./pvc.yaml
-    sed -i '/\ \ accessModes:/a \ \ - ReadWriteOnce' ./pvc.yaml
-    sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-ceph-rbd' ./pvc.yaml
-    oc -n openshift-storage create -f ./pvc.yaml
+    sed -i '5d' {{ pvc_yml }}
+    sed -i '/  - ReadWrite/d' {{ pvc_yml }}
+    sed -i '$d' {{ pvc_yml }}
+    sed -i '/metadata:/a \ \ name: {{ pvc }}-{{ item }}' {{ pvc_yml }}
+    sed -i '/\ \ accessModes:/a \ \ - ReadWriteOnce' {{ pvc_yml }}
+    sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-ceph-rbd' {{ pvc_yml }}
+    oc -n openshift-storage create -f {{ pvc_yml }}
   args:
     warn: false
-  with_sequence: start=1 end=500
+  with_sequence: start=1 end=3
+  ignore_errors: yes
 
 - name: Pool status before rbd bench
   shell: |

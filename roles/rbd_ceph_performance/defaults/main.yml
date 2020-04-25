@@ -1,4 +1,8 @@
 ---
+# pvc.yml path
+pvc_yml: './roles/rbd_ceph_performance/templates/pvc.yml'
+# pvc prefix name
+pvc: 'test-rbd-pvc'
 # pool name
 pool_name: 'rbd'
 # rbd name
