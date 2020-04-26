@@ -81,38 +81,43 @@
   debug:
     msg: "{{ pool_status.stdout.split('\n') }}"
 
-- name: 'Collect rbd image names'
+- name: Collect rbd image names
   shell: |
     oc get pv -n openshift-storage -o name -o=jsonpath='{range .items[*]}{.spec.csi.volumeHandle}{"\t"}{.spec.claimRef.name}{"\n"}{end}' | grep "{{ pvc }}" | cut -d $'\t' -f1 | cut -d'-' -f6-
-#    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
-#    tool_pods=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
-#     oc exec -n {{ name_space }} $TOOLS_POD -it -- rbd bench {{ pool_name }}/{{ pvc }}-{{ item }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}
   register: rbd_images
 
-- name: Print rbdimages
-  debug:
-    msg: "{{ rbd_images.stdout_lines }}"
+- name: Collect ceph-tool pod names
+  shell: |
+    oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
+  register: ceph_tool_pods
 
-#- name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}'
-#  shell: |
-#    oc get pv -n torage -o name -o=jsonpath='{range .items[?(@.spec.claimRef.name=="db-noobaa-db-0")]}{.spec.csi.volumeHandle}{"\n"}{end}'
-#    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
-#    tool_pods=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
-#     oc exec -n {{ name_space }} $TOOLS_POD -it -- rbd bench {{ pool_name }}/{{ pvc }}-{{ item }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }} --rw-mix-read {{ rw_mix_read }}
-#  with_sequence: start=1 end=3
-#  when: io_type == "rw"
-#  register: rados_bench_out
-#  async: 600  # Maximum runtime in seconds. Adjust as needed.
-#  poll: 0  # Fire and continue (never poll)
+#- name: Print pods
+#  debug:
+#    msg: "{{ item.0 }} {{ item.1 }}"
+#  loop: "{{ rbd_images.stdout.split('\n')|zip(ceph_tool_pods.stdout.split('\n'))|list }}"
 
-#- name: Wait for rbd jobs to finish
-#  async_status:
-#    jid: "{{ item.ansible_job_id }}"
-#  register: _jobs
-#  until: _jobs.finished
-#  delay: 5  # Check every 5 seconds. Adjust as you like.
-#  retries: 10  # Retry up to 10 times. Adjust as needed.
-#  with_items: "{{ _create_instances.results }}"
+- name: rbd bench rbd rw
+  shell: |
+    oc exec -n {{ name_space }} {{ item.0 }} -it -- rbd bench {{ pool_name }}/csi-vol-{{ item.1 }} --io-type {{ io_type.user_input }} --io-size {{ io_size.user_input }} --io-threads {{ io_threads.user_input }} --io-total {{ io_total.user_input }} --io-pattern {{ io_pattern.user_input }} --rw-mix-read {{ rw_mix_read.user_input }}
+  loop: "{{ ceph_tool_pods.stdout.split('\n')|zip(rbd_images.stdout.split('\n'))|list }}"
+  register: _create_instances
+  async: 1800  # Maximum runtime in seconds. Adjust as needed.
+  poll: 0  # Fire and continue (never poll)
+  when: io_type.user_input == "rw"
+
+- name: Wait for rbd jobs to finish
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: _jobs
+  until: _jobs.finished
+  delay: 10  # Check every 5 seconds. Adjust as you like.
+  retries: 180  # Retry up to 10 times. Adjust as needed.
+  loop: "{{ _create_instances.results }}"
+  when: io_type.user_input == "rw"
+
+#- name: Print results
+#  debug:
+#    msg: "{{ _create_instances.results }}"
 
 #- name: Print rbd bench results
 #  debug:
@@ -139,6 +144,7 @@
     sed -i '/\ \ accessModes:/a \ \ - ReadWriteOnce' {{ pvc_yml }}
     sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-ceph-rbd' {{ pvc_yml }}
     oc -n openshift-storage delete -f {{ pvc_yml }}
+    sleep 12
   args:
     warn: false
   with_sequence: start=1 end=3
