@@ -135,6 +135,15 @@
   loop: "{{ _create_instances.results }}"
   when: io_type.user_input == "read" or io_type.user_input == "write"
 
+- name: Print pool status before rbd bench
+  debug:
+    msg: "{{ pool_status.stdout.split('\n') }}"
+
+- name: Print benchmarks stats
+  debug:
+    msg: "{{ item.stdout_lines }}"
+  loop: "{{ _jobs.results }}"
+
 - name: Delete testing pvcs block
   shell: |
     sed -i '5d' {{ pvc_yml }}
