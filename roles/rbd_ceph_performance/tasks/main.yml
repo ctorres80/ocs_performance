@@ -56,6 +56,7 @@
           - 70
           - 90
   register: rw_mix_read
+  when: io_type.user_input == "rw"
 
 - name: Let's create 3 pvcs block with storage class ocs-storagecluster-ceph-rbd
   shell: |
@@ -96,7 +97,7 @@
 #    msg: "{{ item.0 }} {{ item.1 }}"
 #  loop: "{{ rbd_images.stdout.split('\n')|zip(ceph_tool_pods.stdout.split('\n'))|list }}"
 
-- name: rbd bench rbd rw
+- name: rbd bench mixed rbd rw
   shell: |
     oc exec -n {{ name_space }} {{ item.0 }} -it -- rbd bench {{ pool_name }}/csi-vol-{{ item.1 }} --io-type {{ io_type.user_input }} --io-size {{ io_size.user_input }} --io-threads {{ io_threads.user_input }} --io-total {{ io_total.user_input }} --io-pattern {{ io_pattern.user_input }} --rw-mix-read {{ rw_mix_read.user_input }}
   loop: "{{ ceph_tool_pods.stdout.split('\n')|zip(rbd_images.stdout.split('\n'))|list }}"
@@ -105,7 +106,7 @@
   poll: 0  # Fire and continue (never poll)
   when: io_type.user_input == "rw"
 
-- name: Wait for rbd jobs to finish
+- name: Wait for rbd mixed rw jobs to finish
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
@@ -115,25 +116,24 @@
   loop: "{{ _create_instances.results }}"
   when: io_type.user_input == "rw"
 
-#- name: Print results
-#  debug:
-#    msg: "{{ _create_instances.results }}"
+- name: rbd bench rbd
+  shell: |
+    oc exec -n {{ name_space }} {{ item.0 }} -it -- rbd bench {{ pool_name }}/csi-vol-{{ item.1 }} --io-type {{ io_type.user_input }} --io-size {{ io_size.user_input }} --io-threads {{ io_threads.user_input }} --io-total {{ io_total.user_input }} --io-pattern {{ io_pattern.user_input }}
+  loop: "{{ ceph_tool_pods.stdout.split('\n')|zip(rbd_images.stdout.split('\n'))|list }}"
+  register: _create_instances
+  async: 3600  # Maximum runtime in seconds. Adjust as needed.
+  poll: 0  # Fire and continue (never poll)
+  when: io_type.user_input == "read" or io_type.user_input == "write"
 
-#- name: Print rbd bench results
-#  debug:
-#    msg: "{{ rados_bench_out.stdout.split('\n') }}"
-#  when: io_type == "rw"
-
-#- name: 'rbd bench rbd --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }}'
-#  shell: |
-#    rbd bench {{ pool_name }}/{{ rbd_image_name }} --io-type {{ io_type }} --io-size {{ io_size }} --io-threads {{ io_threads }} --io-total {{ io_total }} --io-pattern {{ io_pattern }}
-#  register: rados_bench_out
-#  when: io_type == "read" or io_type == "write"
-
-#- name: Print rbd bench results
-#  debug:
-#    msg: "{{ rados_bench_out.stdout.split('\n') }}"
-#  when: io_type == "read" or io_type == "write"
+- name: Wait for rbd mixed rw jobs to finish
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: _jobs
+  until: _jobs.finished
+  delay: 10  # Check every 10 seconds. Adjust as you like.
+  retries: 360  # Retry up to 360 times. Adjust as needed.
+  loop: "{{ _create_instances.results }}"
+  when: io_type.user_input == "read" or io_type.user_input == "write"
 
 - name: Delete testing pvcs block
   shell: |
@@ -149,3 +149,4 @@
     warn: false
   with_sequence: start=1 end=3
   ignore_errors: yes
+  
