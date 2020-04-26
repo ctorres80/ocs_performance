@@ -1,5 +1,20 @@
 - pause:
     prompt: |
+          Valid size (GB) integer, examples:
+          - 10
+          - 100
+          - 1000
+  register: pv_size
+
+- pause:
+    prompt: |
+          Delete pvc when benchmark is completed?:
+          - yes
+          - no
+  register: delete_pvc
+
+- pause:
+    prompt: |
           Valid I/O type:
           - rw
           - write
@@ -58,6 +73,11 @@
   register: rw_mix_read
   when: io_type.user_input == "rw"
 
+- name: Configure pvc size
+  template:
+    src: ./roles/rbd_ceph_performance/templates/pvc.yml.j2
+    dest: ./roles/rbd_ceph_performance/templates/pvc.yml
+
 - name: Let's create 3 pvcs block with storage class ocs-storagecluster-ceph-rbd
   shell: |
     sed -i '5d' {{ pvc_yml }}
@@ -76,11 +96,7 @@
   shell: |
     TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
     oc exec -n {{ name_space }} $TOOLS_POD -it -- rados df
-  register: pool_status
-
-- name: Print pool status before rbd bench
-  debug:
-    msg: "{{ pool_status.stdout.split('\n') }}"
+  register: pool_status_1
 
 - name: Collect rbd image names
   shell: |
@@ -102,7 +118,7 @@
     oc exec -n {{ name_space }} {{ item.0 }} -it -- rbd bench {{ pool_name }}/csi-vol-{{ item.1 }} --io-type {{ io_type.user_input }} --io-size {{ io_size.user_input }} --io-threads {{ io_threads.user_input }} --io-total {{ io_total.user_input }} --io-pattern {{ io_pattern.user_input }} --rw-mix-read {{ rw_mix_read.user_input }}
   loop: "{{ ceph_tool_pods.stdout.split('\n')|zip(rbd_images.stdout.split('\n'))|list }}"
   register: _create_instances
-  async: 1800  # Maximum runtime in seconds. Adjust as needed.
+  async: 3600  # Maximum runtime in seconds. Adjust as needed.
   poll: 0  # Fire and continue (never poll)
   when: io_type.user_input == "rw"
 
@@ -112,8 +128,14 @@
   register: _jobs
   until: _jobs.finished
   delay: 10  # Check every 5 seconds. Adjust as you like.
-  retries: 180  # Retry up to 10 times. Adjust as needed.
+  retries: 360  # Retry up to 10 times. Adjust as needed.
   loop: "{{ _create_instances.results }}"
+  when: io_type.user_input == "rw"
+
+- name: Print benchmarks stats
+  debug:
+    msg: "{{ item.stdout_lines }}"
+  loop: "{{ _jobs.results }}"
   when: io_type.user_input == "rw"
 
 - name: rbd bench rbd
@@ -125,7 +147,7 @@
   poll: 0  # Fire and continue (never poll)
   when: io_type.user_input == "read" or io_type.user_input == "write"
 
-- name: Wait for rbd mixed rw jobs to finish
+- name: Wait for rbd jobs to finish
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
@@ -135,14 +157,28 @@
   loop: "{{ _create_instances.results }}"
   when: io_type.user_input == "read" or io_type.user_input == "write"
 
-- name: Print pool status before rbd bench
-  debug:
-    msg: "{{ pool_status.stdout.split('\n') }}"
-
 - name: Print benchmarks stats
   debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"
+  when: io_type.user_input == "read" or io_type.user_input == "write"
+
+- name: Pool status after rbd bench
+  shell: |
+    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
+    oc exec -n {{ name_space }} $TOOLS_POD -it -- rados df
+  register: pool_status_2
+
+- name: Print pool status before rbd bench
+  debug:
+    msg: "{{ pool_status_1.stdout.split('\n') }}"
+
+- name: Print pool status after rbd bench
+  debug:
+    msg: "{{ pool_status_2.stdout.split('\n') }}"
+
+- pause:
+    seconds: 30
 
 - name: Delete testing pvcs block
   shell: |
@@ -153,9 +189,9 @@
     sed -i '/\ \ accessModes:/a \ \ - ReadWriteOnce' {{ pvc_yml }}
     sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-ceph-rbd' {{ pvc_yml }}
     oc -n openshift-storage delete -f {{ pvc_yml }}
-    sleep 12
+    sleep 6
   args:
     warn: false
   with_sequence: start=1 end=3
+  when: delete_pvc.user_input == "yes"
   ignore_errors: yes
-  
