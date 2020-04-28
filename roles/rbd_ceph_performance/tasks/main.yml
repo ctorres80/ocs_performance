@@ -1,5 +1,10 @@
 - pause:
     prompt: |
+          How many ceph-tool pods are you running? :
+  register: num_ceph_tool_pods
+
+- pause:
+    prompt: |
           Valid size (GB) integer, examples:
           - 10
           - 100
@@ -89,8 +94,11 @@
     oc -n openshift-storage create -f {{ pvc_yml }}
   args:
     warn: false
-  with_sequence: start=1 end=3
+  with_sequence: start=1 end="{{ num_ceph_tool_pods.user_input }}"
   ignore_errors: yes
+
+- pause:
+    seconds: 10
 
 - name: Pool status before rbd bench
   shell: |
@@ -177,9 +185,6 @@
   debug:
     msg: "{{ pool_status_2.stdout.split('\n') }}"
 
-- pause:
-    seconds: 30
-
 - name: Delete testing pvcs block
   shell: |
     sed -i '5d' {{ pvc_yml }}
@@ -192,6 +197,6 @@
     sleep 6
   args:
     warn: false
-  with_sequence: start=1 end=3
+  with_sequence: start=1 end="{{ num_ceph_tool_pods.user_input }}"
   when: delete_pvc.user_input == "yes"
   ignore_errors: yes
