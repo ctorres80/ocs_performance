@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: fio-ceph-tools
+  name: fio-ceph-tools
+  namespace: openshift-storage
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: fio-ceph-tools
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: fio-ceph-tools
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cluster.ocs.openshift.io/openshift-storage
+                operator: In
+                values:
+                - ""
+      containers:
+      - name: fio-ceph-tools
+        image: quay.io/cloud-bulldozer/fio:latest
+        command:
+          - sleep
+          - "86400"
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /usr/share/cephfsvol
+          name: test-rbd-pvc
+      restartPolicy: Always
+      schedulerName: default-scheduler
+  volumeClaimTemplates:
+  - metadata:
+      name: test-rbd-pvc
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: 100Gi
+      storageClassName: ocs-storagecluster-cephfs
+      
