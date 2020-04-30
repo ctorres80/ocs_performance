@@ -83,7 +83,7 @@
     src: ./roles/rbd_ceph_performance/templates/pvc.yml.j2
     dest: ./roles/rbd_ceph_performance/templates/pvc.yml
 
-- name: Let's create 3 pvcs block with storage class ocs-storagecluster-ceph-rbd
+- name: Let's create {{ num_ceph_tool_pods.user_input }} pvcs block with storage class ocs-storagecluster-ceph-rbd
   shell: |
     sed -i '5d' {{ pvc_yml }}
     sed -i '/  - ReadWrite/d' {{ pvc_yml }}
