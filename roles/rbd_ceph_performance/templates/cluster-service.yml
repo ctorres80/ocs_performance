@@ -36,4 +36,4 @@ spec:
         memory: 8Gi
       requests:
         cpu: 8
-        memory: 4Gi
+        memory: 5Gi
