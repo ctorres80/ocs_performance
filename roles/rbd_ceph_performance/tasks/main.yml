@@ -214,6 +214,7 @@
               - write
               - randwrite
               - readwrite
+              - randrw
       register: io_type
 
     - pause:
@@ -251,14 +252,14 @@
     - pause:
         prompt: |
               IO rw_mix_read:
-      register: rw_mix_read
-      when: io_type.user_input == "readwrite"
+      register: rwmixread
+      when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
     - pause:
         prompt: |
               IO rwmixwrite:
       register: rwmixwrite
-      when: io_type.user_input == "readwrite"
+      when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
     - name: Pool status before rbd bench
       shell: |
@@ -278,7 +279,7 @@
       register: _create_instances
       async: 3600  # Maximum runtime in seconds. Adjust as needed.
       poll: 0  # Fire and continue (never poll)
-      when: io_type.user_input == "readwrite"
+      when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
     - name: Wait for fio mixed rw jobs to finish
       async_status:
@@ -288,13 +289,13 @@
       delay: 10  # Check every 5 seconds. Adjust as you like.
       retries: 360  # Retry up to 10 times. Adjust as needed.
       loop: "{{ _create_instances.results }}"
-      when: io_type.user_input == "readwrite"
+      when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
     - name: Print benchmarks stats
       debug:
         msg: "{{ item.stdout_lines }}"
       loop: "{{ _jobs.results }}"
-      when: io_type.user_input == "readwrite"
+      when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
     - name: fio bench read, write, randwrite
       shell: |
