@@ -1,6 +1,6 @@
 - pause:
     prompt: |
-          Can you tell me th benchmark? :
+          Can you tell me what kind of benchmark would you like to run? :
               - fio
               - rbd-bench
   register: benchmark
@@ -20,6 +20,7 @@
               - read
               - write
               - randwrite
+              - randread
               - readwrite
               - randrw
       register: io_type
@@ -49,6 +50,9 @@
               - 32
               - 64
               - 128
+              - 256
+              - 512
+              - 1024
       register: io_threads
 
     - pause:
@@ -68,13 +72,13 @@
       register: rwmixwrite
       when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
-    - name: Pool status before rbd bench
+    - name: Pool status before fio bench
       shell: |
         TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
         oc exec -n {{ name_space }} $TOOLS_POD -it -- rados df
       register: pool_status_1
 
-    - name: Collect fio-ceph-tool pod names
+    - name: Collect fio-{{ ocs_protocol.user_input }}-ceph-tool pod names
       shell: |
         oc get pods -n {{ name_space }} -l app=fio-{{ ocs_protocol.user_input }}-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
       register: fio_ceph_tool_pods
@@ -111,7 +115,7 @@
       register: _create_instances
       async: 3600  # Maximum runtime in seconds. Adjust as needed.
       poll: 0  # Fire and continue (never poll)
-      when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite"
+      when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
     - name: Wait for cephfs jobs to finish
       async_status:
@@ -121,13 +125,13 @@
       delay: 10  # Check every 10 seconds. Adjust as you like.
       retries: 360  # Retry up to 360 times. Adjust as needed.
       loop: "{{ _create_instances.results }}"
-      when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite"
+      when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
     - name: Print benchmarks stats
       debug:
         msg: "{{ item.stdout_lines }}"
       loop: "{{ _jobs.results }}"
-      when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite"
+      when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
     - name: Pool status after cephfs bench
       shell: |
