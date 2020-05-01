@@ -49,9 +49,8 @@ spec:
       name: test-ocs-pvc
     spec:
       accessModes:
-        - ReadWriteMany
+        - ReadWriteOnce
       resources:
         requests:
           storage: 100Gi
       storageClassName: ocs-storagecluster-ceph-rbd
-      
