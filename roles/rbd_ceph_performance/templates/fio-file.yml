@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
-    app: fio-ceph-tools
-  name: fio-ceph-tools
+    app: fio-file-ceph-tools
+  name: fio-file-ceph-tools
   namespace: openshift-storage
 spec:
   progressDeadlineSeconds: 600
@@ -11,7 +11,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: fio-ceph-tools
+      app: fio-file-ceph-tools
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -21,7 +21,7 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: fio-ceph-tools
+        app: fio-file-ceph-tools
     spec:
       affinity:
         nodeAffinity:
@@ -33,7 +33,7 @@ spec:
                 values:
                 - ""
       containers:
-      - name: fio-ceph-tools
+      - name: fio-file-ceph-tools
         image: quay.io/cloud-bulldozer/fio:latest
         command:
           - sleep
