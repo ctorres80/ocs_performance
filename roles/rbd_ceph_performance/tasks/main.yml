@@ -111,7 +111,6 @@
     - name: fio bench read, write, randwrite
       shell: |
         oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int * 1024 / io_size.user_input|int }}
-        oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --filename=/usr/share/ocs-pvc/test --bs={{ io_size.user_input }} --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }} --rw={{ io_type.user_input }}
       loop: "{{ fio_ceph_tool_pods.stdout_lines }}"
       register: _create_instances
       async: 3600  # Maximum runtime in seconds. Adjust as needed.
