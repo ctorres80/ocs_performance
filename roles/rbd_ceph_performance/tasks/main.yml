@@ -27,16 +27,16 @@
 
     - pause:
         prompt: |
-              Valid I/O size example:
-              - 4K
-              - 8K
-              - 16K
-              - 32K
-              - 64K
-              - 128K
-              - 256K
-              - 1024K
-              - 4096K
+              Valid I/O size in KB example:
+              - 4
+              - 8
+              - 16
+              - 32
+              - 64
+              - 128
+              - 256
+              - 1024
+              - 4096
       register: io_size
 
     - pause:
@@ -57,7 +57,7 @@
 
     - pause:
         prompt: |
-              IO in GB total max 100GB:
+              IO in GB total in GB (max 100):
       register: io_total
 
     - pause:
@@ -85,7 +85,7 @@
 
     - name: fio bench mixed rbd rw
       shell: |
-        oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --filename=/usr/share/ocs-pvc/test --bs={{ io_size.user_input }} --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }} --rw={{ io_type.user_input }} --rwmixread={{ rwmixread.user_input }} --rwmixwrite={{ rwmixwrite.user_input }}
+        oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --rwmixread={{ rwmixread.user_input }} --rwmixwrite={{ rwmixwrite.user_input }} --nrfiles={{ io_total.user_input|int * 1024 / io_size.user_input|int }}
       loop: "{{ fio_ceph_tool_pods.stdout_lines }}"
       register: _create_instances
       async: 3600  # Maximum runtime in seconds. Adjust as needed.
@@ -110,6 +110,7 @@
 
     - name: fio bench read, write, randwrite
       shell: |
+        oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int * 1024 / io_size.user_input|int }}
         oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --filename=/usr/share/ocs-pvc/test --bs={{ io_size.user_input }} --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }} --rw={{ io_type.user_input }}
       loop: "{{ fio_ceph_tool_pods.stdout_lines }}"
       register: _create_instances
@@ -349,3 +350,4 @@
       when: delete_pvc.user_input == "yes"
       ignore_errors: yes
   when: benchmark.user_input == "rbd-bench"
+  
