@@ -1,11 +1,12 @@
+---
 - pause:
     prompt: |
           Can you tell me what kind of benchmark would you like to run? :
               - fio
-              - rbd-bench
+              - clean-fio-tests
               - s3cmd-sync
               - s3cmd-delete
-              - clean-fio-tests
+              - rbd-bench
               - delete-fio-pods
   register: benchmark
 
