@@ -1,0 +1,40 @@
+---
+- name: Collect fio-file-ceph-tool pod names
+  shell: |
+    oc get pods -n {{ name_space }} -l app=fio-file-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
+  register: fio_ceph_tool_pods
+
+- name: s3cmd sync commands
+  shell: |
+    endpoint=$(oc get services s3 -n {{ name_space }} -o yaml -o jsonpath='{.spec.clusterIP}{"\n"}')
+    for i in {0..{{ fio_ceph_tool_pods.stdout.split()|length - 1 }}}
+        do
+          access_key=$(oc get secrets test-ocs-$i -n {{ name_space }} -o jsonpath='{.data.AWS_ACCESS_KEY_ID}{"\n"}' | base64 -d)
+          secret_key=$(oc get secrets test-ocs-$i -n {{ name_space }} -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}{"\n"}' | base64 -d)
+          bucket=$(oc get configmap test-ocs-$i -n {{ name_space }} -o jsonpath='{.data.BUCKET_NAME}{"\n"}')
+          echo "fio-file-ceph-tools-$i -c fio-s3cmd -n {{ name_space }} -- s3cmd --host-bucket= --no-ssl --host=$endpoint --access_key=$access_key --secret_key=$secret_key del s3://$bucket/*"
+    done
+  register: s3_cmds
+
+- name: s3cmd delete execute
+  shell: |
+    oc exec {{ item }}
+  loop: "{{ s3_cmds.stdout_lines }}"
+  register: _create_instances
+  async: 3600  # Maximum runtime in seconds. Adjust as needed.
+  poll: 0  # Fire and continue (never poll)
+
+- name: Wait for s3cmd delete completed
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: _jobs
+  until: _jobs.finished
+  delay: 10  # Check every 5 seconds. Adjust as you like.
+  retries: 360  # Retry up to 10 times. Adjust as needed.
+  loop: "{{ _create_instances.results }}"
+
+- name: Print s3cmd delete stats
+  debug:
+    msg: "{{ item.stdout_lines }}"
+  loop: "{{ _jobs.results }}"
+  

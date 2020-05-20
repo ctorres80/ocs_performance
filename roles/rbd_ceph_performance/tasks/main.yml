@@ -3,6 +3,8 @@
           Can you tell me what kind of benchmark would you like to run? :
               - fio
               - rbd-bench
+              - s3cmd-sync
+              - s3cmd-delete
               - clean-fio-tests
               - delete-fio-pods
   register: benchmark
@@ -18,3 +20,12 @@
 - name: Ceph rbd bench
   include_tasks: rbdbench-tests.yml
   when: benchmark.user_input == "rbd-bench"
+
+- name: s3cmd testing
+  include_tasks: s3cmd.yml
+  when: benchmark.user_input == "s3cmd-sync"
+
+- name: s3cmd testing
+  include_tasks: s3cmd-delete.yml
+  when: benchmark.user_input == "s3cmd-delete"
+  
