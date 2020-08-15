@@ -1,0 +1,64 @@
+  ---
+- name: Let's play with rook-ceph
+  hosts: localhost
+  become: true
+  tasks:
+  - name: Let's create 50 pvcs block with storage class ocs-storagecluster-ceph-rbd
+    shell: |
+      sed -i '5d' ./pvc.yaml
+      sed -i '/  - ReadWrite/d' ./pvc.yaml
+      sed -i '$d' ./pvc.yaml
+      sed -i '/metadata:/a \ \ name: rbd-pvc-{{ item }}' ./pvc.yaml
+      sed -i '/\ \ accessModes:/a \ \ - ReadWriteOnce' ./pvc.yaml
+      sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-ceph-rbd' ./pvc.yaml
+      oc -n openshift-storage create -f ./pvc.yaml
+    args:
+      warn: false
+    with_sequence: start=1 end=50
+    tags:
+      - create_block_pvcs
+
+  - name: Let's delete 50 pvcs block with storage class ocs-storagecluster-ceph-rbd
+    shell: |
+      sed -i '5d' ./pvc.yaml
+      sed -i '/  - ReadWrite/d' ./pvc.yaml
+      sed -i '$d' ./pvc.yaml
+      sed -i '/metadata:/a \ \ name: rbd-pvc-{{ item }}' ./pvc.yaml
+      sed -i '/\ \ accessModes:/a \ \ - ReadWriteOnce' ./pvc.yaml
+      sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-ceph-rbd' ./pvc.yaml
+      oc -n openshift-storage delete -f ./pvc.yaml
+    args:
+      warn: false
+    with_sequence: start=1 end=50
+    tags:
+      - delete_block_pvcs
+
+  - name: Let's create 50 pvcs file with storage class ocs-storagecluster-ceph-rbd
+    shell: |
+      sed -i '5d' ./pvc.yaml
+      sed -i '/  - ReadWrite/d' ./pvc.yaml
+      sed -i '$d' ./pvc.yaml
+      sed -i '/metadata:/a \ \ name: cephfs-pvc-{{ item }}' ./pvc.yaml
+      sed -i '/\ \ accessModes:/a \ \ - ReadWriteMany' ./pvc.yaml
+      sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-cephfs' ./pvc.yaml
+      oc -n openshift-storage create -f ./pvc.yaml
+    args:
+      warn: false
+    with_sequence: start=1 end=50
+    tags:
+      - create_file_pvcs
+
+  - name: Let's delete 50 pvcs file with storage class ocs-storagecluster-ceph-rbd
+    shell: |
+      sed -i '5d' ./pvc.yaml
+      sed -i '/  - ReadWrite/d' ./pvc.yaml
+      sed -i '$d' ./pvc.yaml
+      sed -i '/metadata:/a \ \ name: cephfs-pvc-{{ item }}' ./pvc.yaml
+      sed -i '/\ \ accessModes:/a \ \ - ReadWriteMany' ./pvc.yaml
+      sed -i '/\ \ \ \ storage:/a \ \ storageClassName: ocs-storagecluster-cephfs' ./pvc.yaml
+      oc -n openshift-storage delete -f ./pvc.yaml
+    args:
+      warn: false
+    with_sequence: start=1 end=50
+    tags:
+      - delete_file_pvcs
