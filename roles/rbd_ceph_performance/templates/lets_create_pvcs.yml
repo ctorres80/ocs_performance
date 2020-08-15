@@ -1,4 +1,4 @@
-  ---
+---
 - name: Let's play with rook-ceph
   hosts: localhost
   become: true
