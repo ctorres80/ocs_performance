@@ -6,17 +6,9 @@ metadata:
   namespace: openshift-storage
 spec:
   manageNodes: false
-  monPVCTemplate:
-    spec:
-      accessModes:
-      - ReadWriteOnce
-      resources:
-        requests:
-          storage: 10Gi
-      storageClassName: gp2
-      volumeMode: Filesystem
+  monDataDirHostPath: /var/lib/rook
   storageDeviceSets:
-  - count: 4
+  - count: 32
     dataPVCTemplate:
       spec:
         accessModes:
