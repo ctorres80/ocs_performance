@@ -1,10 +1,19 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  name: testing-ocs-storage
+spec: {}
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
     app: fio-file-ceph-tools
   name: fio-file-ceph-tools
-  namespace: openshift-storage
+  namespace: testing-ocs-storage
 spec:
   progressDeadlineSeconds: 600
   replicas: 0
@@ -23,8 +32,17 @@ spec:
       labels:
         app: fio-file-ceph-tools
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cluster.ocs.openshift.io/openshift-storage
+                operator: NotIn
+                values:
+                - ""
       containers:
-      - name: fio-file-cephfs
+      - name: fio-file-ceph-tools
         image: quay.io/cloud-bulldozer/fio:latest
         command:
           - sleep
@@ -32,15 +50,6 @@ spec:
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - mountPath: /usr/share/ocs-pvc
-          name: test-ocs-pvc
-      - name: fio-s3cmd
-        image: quay.io/intellihr/s3sync:latest
-        command:
-          - sleep
-          - "86400"
-        imagePullPolicy: IfNotPresent
-        volumeMounts:
-        - mountPath: /opt/data
           name: test-ocs-pvc
       restartPolicy: Always
       schedulerName: default-scheduler

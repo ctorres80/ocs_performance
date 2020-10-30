@@ -1,0 +1,37 @@
+- pause:
+    prompt: |
+          OCS cluster:
+          - internal
+          - external
+  register: ocs_cluster
+- pause:
+    prompt: |
+          How many fio pods ?
+  register: fio_pods
+
+- name: Create the statefulset external
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc create -f roles/rbd_ceph_performance/templates/fio-block-external.yml
+    oc create -f roles/rbd_ceph_performance/templates/fio-file-external.yml
+  register: fio_create_block_statefulset
+  when: ocs_cluster.user_input == "external"
+  ignore_errors: yes
+
+- name: Create the statefulset internal
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc create -f roles/rbd_ceph_performance/templates/fio-block.yml
+    oc create -f roles/rbd_ceph_performance/templates/fio-file.yml
+  register: fio_create_block_statefulset
+  when: ocs_cluster.user_input == "internal"
+  ignore_errors: yes
+
+- name: Scale fio-{{ ocs_interface.user_input  }}-{{ ocs_cluster.user_input  }} pods
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} scale statefulset fio-block-ceph-tools --replicas={{ fio_pods.user_input }}
+    oc -n {{ name_space }} scale statefulset fio-file-ceph-tools --replicas={{ fio_pods.user_input }}
+  register: fio_pods
+  when: fio_pods.user_input != ''
+  ignore_errors: yes

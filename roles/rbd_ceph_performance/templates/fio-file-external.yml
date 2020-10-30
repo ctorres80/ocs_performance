@@ -11,8 +11,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
-    app: fio-block-ceph-tools
-  name: fio-block-ceph-tools
+    app: fio-file-ceph-tools
+  name: fio-file-ceph-tools
   namespace: testing-ocs-storage
 spec:
   progressDeadlineSeconds: 600
@@ -20,7 +20,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: fio-block-ceph-tools
+      app: fio-file-ceph-tools
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -30,19 +30,19 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: fio-block-ceph-tools
+        app: fio-file-ceph-tools
     spec:
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: cluster.ocs.openshift.io/testing-ocs-storage
+              - key: cluster.ocs.openshift.io/openshift-storage
                 operator: NotIn
                 values:
                 - ""
       containers:
-      - name: fio-block-ceph-tools
+      - name: fio-file-ceph-tools
         image: quay.io/cloud-bulldozer/fio:latest
         command:
           - sleep
@@ -58,8 +58,8 @@ spec:
       name: test-ocs-pvc
     spec:
       accessModes:
-        - ReadWriteOnce
+        - ReadWriteMany
       resources:
         requests:
           storage: 100Gi
-      storageClassName: ocs-storagecluster-ceph-rbd
+      storageClassName: ocs-external-storagecluster-cephfs

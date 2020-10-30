@@ -2,6 +2,7 @@
 - pause:
     prompt: |
           Can you tell me what kind of benchmark would you like to run? :
+              - deploy_environment
               - fio
               - clean-fio-tests
               - s3cmd-sync
@@ -10,8 +11,12 @@
               - delete-fio-pods
   register: benchmark
 
+- name: create environment test
+  include_tasks: deploy_test_env.yml
+  when: benchmark.user_input == "deploy_environment"
+
 - name: clean-fio-tests
-  include_tasks: clean-fio-tests.yml
+  include_tasks: clean-fio-test.yml
   when: benchmark.user_input == "clean-fio-tests"
 
 - name: fio benchmark
@@ -29,4 +34,3 @@
 - name: s3cmd testing
   include_tasks: s3cmd-delete.yml
   when: benchmark.user_input == "s3cmd-delete"
-  
