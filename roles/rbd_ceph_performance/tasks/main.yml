@@ -1,36 +1,35 @@
 ---
 - pause:
     prompt: |
-          Can you tell me what kind of benchmark would you like to run? :
-              - deploy_environment
-              - fio
-              - clean-fio-tests
-              - s3cmd-sync
-              - s3cmd-delete
-              - rbd-bench
-              - delete-fio-pods
+          Select the task number:
+              - 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage)
+              - 2 -> fio workloads
+              - 3 -> clean-fio-tests
+              - 4 -> s3cmd-sync
+              - 5 -> s3cmd-delete
+              - 6 -> delete-fio-pods
   register: benchmark
 
 - name: create environment test
   include_tasks: deploy_test_env.yml
-  when: benchmark.user_input == "deploy_environment"
-
-- name: clean-fio-tests
-  include_tasks: clean-fio-test.yml
-  when: benchmark.user_input == "clean-fio-tests"
+  when: benchmark.user_input == "1"
 
 - name: fio benchmark
   include_tasks: fio-tests.yml
-  when: benchmark.user_input == "fio"
+  when: benchmark.user_input == "2"
 
-- name: Ceph rbd bench
-  include_tasks: rbdbench-tests.yml
-  when: benchmark.user_input == "rbd-bench"
+- name: clean-fio-tests
+  include_tasks: clean-fio-test.yml
+  when: benchmark.user_input == "3"
 
 - name: s3cmd testing
   include_tasks: s3cmd.yml
-  when: benchmark.user_input == "s3cmd-sync"
+  when: benchmark.user_input == "4"
 
-- name: s3cmd testing
+- name: s3cmd delete
   include_tasks: s3cmd-delete.yml
-  when: benchmark.user_input == "s3cmd-delete"
+  when: benchmark.user_input == "5"
+
+- name: fio delete environment test
+  include_tasks: fio-delete.yml
+  when: benchmark.user_input == "6"

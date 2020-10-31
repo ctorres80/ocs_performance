@@ -20,31 +20,13 @@
 - pause:
     prompt: |
           Valid I/O size in KB example:
-          - 4
-          - 8
-          - 16
-          - 32
-          - 64
-          - 128
-          - 256
-          - 1024
-          - 4096
+          - 4, 8, 16, 32, 64, 128, 256, 1024, 2048, 4096 ?
   register: io_size
 
 - pause:
     prompt: |
           Valid io_threads example:
-          - 1
-          - 2
-          - 4
-          - 8
-          - 16
-          - 32
-          - 64
-          - 128
-          - 256
-          - 512
-          - 1024
+          - 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096
   register: io_threads
 
 - pause:
@@ -64,19 +46,16 @@
   register: rwmixwrite
   when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
-- name: Pool status before fio bench
-  shell: |
-    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
-    oc exec -n {{ name_space }} $TOOLS_POD -it -- rados df
-  register: pool_status_1
 
 - name: Collect fio-{{ ocs_protocol.user_input }}-ceph-tool pod names
   shell: |
+    export KUBECONFIG={{ kubeconfig }}
     oc get pods -n {{ name_space }} -l app=fio-{{ ocs_protocol.user_input }}-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
   register: fio_ceph_tool_pods
 
 - name: fio bench mixed rbd rw
   shell: |
+    export KUBECONFIG={{ kubeconfig }}
     oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --rwmixread={{ rwmixread.user_input }} --rwmixwrite={{ rwmixwrite.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1
   loop: "{{ fio_ceph_tool_pods.stdout_lines }}"
   register: _create_instances
@@ -102,6 +81,7 @@
 
 - name: fio bench read, write, randwrite
   shell: |
+    export KUBECONFIG={{ kubeconfig }}
     oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1
   loop: "{{ fio_ceph_tool_pods.stdout_lines }}"
   register: _create_instances
@@ -124,17 +104,3 @@
     msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"
   when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
-
-- name: Pool status after cephfs bench
-  shell: |
-    TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name -o=jsonpath='{.items[0].metadata.name}')
-    oc exec -n {{ name_space }} $TOOLS_POD -it -- rados df
-  register: pool_status_2
-
-- name: Print pool status cephfs rbd bench
-  debug:
-    msg: "{{ pool_status_1.stdout.split('\n') }}"
-
-- name: Print pool status after cephfs bench
-  debug:
-    msg: "{{ pool_status_2.stdout.split('\n') }}"

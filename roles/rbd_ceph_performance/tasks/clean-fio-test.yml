@@ -13,11 +13,13 @@
 
 - name: Collect fio-{{ ocs_protocol.user_input }}-ceph-tool pod names
   shell: |
+    export KUBECONFIG={{ kubeconfig }}
     oc get pods -n {{ name_space }} -l app=fio-{{ ocs_protocol.user_input }}-ceph-tools -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
   register: fio_ceph_tool_pods
 
 - name: fio delete /usr/share/ocs-pvc/*
   shell: |
+    export KUBECONFIG={{ kubeconfig }}
     oc exec -n {{ name_space }} {{ item }} -it -- find /usr/share/ocs-pvc -type f -name 'test.*' -delete
   loop: "{{ fio_ceph_tool_pods.stdout_lines }}"
   register: _delete_instances
@@ -32,4 +34,3 @@
   delay: 10  # Check every 5 seconds. Adjust as you like.
   retries: 360  # Retry up to 10 times. Adjust as needed.
   loop: "{{ _delete_instances.results }}"
-  
