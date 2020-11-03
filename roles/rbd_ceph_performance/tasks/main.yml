@@ -18,7 +18,7 @@
   include_tasks: fio-tests.yml
   when: benchmark.user_input == "2"
 
-- name: clean-fio-tests
+- name: clean-fio-test
   include_tasks: clean-fio-test.yml
   when: benchmark.user_input == "3"
 

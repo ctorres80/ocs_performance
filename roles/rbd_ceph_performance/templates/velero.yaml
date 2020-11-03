@@ -1,0 +1,28 @@
+apiVersion: konveyor.openshift.io/v1alpha1
+kind: Velero
+metadata:
+  name: example-velero
+  namespace: oadp-operator
+spec: 
+  olm_managed: true
+  enable_csi_plugin: true
+  use_upstream_images: true
+  backup_storage_locations:
+    - config:
+        region: noobaa
+        s3_url: https://s3-openshift-storage.apps.cluster-008e.008e.example.opentlc.com
+        s3_force_path_style: true
+        insecure_skip_tls_verify: true
+      credentials_secret_ref:
+        name: cloud-credentials
+        namespace: oadp-operator
+      name: default
+      object_storage:
+        bucket: oadp-backup-7f40bfb1-958b-49e4-8687-6409f7039c41
+        prefix: velero
+      provider: aws
+  default_velero_plugins:
+    - aws
+    - openshift
+    - csi
+  enable_restic: false

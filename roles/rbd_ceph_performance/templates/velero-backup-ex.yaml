@@ -1,0 +1,8 @@
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: backup
+  namespace: oadp-operator
+spec:
+  includedNamespaces: 
+    - cnv-testing
