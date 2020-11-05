@@ -32,15 +32,6 @@ spec:
       labels:
         app: fio-block-ceph-tools
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: cluster.ocs.openshift.io/testing-ocs-storage
-                operator: NotIn
-                values:
-                - ""
       containers:
       - name: fio-block-ceph-tools
         image: quay.io/cloud-bulldozer/fio:latest
