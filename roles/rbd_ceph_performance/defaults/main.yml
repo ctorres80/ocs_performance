@@ -1,27 +1,7 @@
 ---
 # pvc.yml path
 pvc_yml: './roles/rbd_ceph_performance/templates/pvc.yml'
-# pvc prefix name
-pvc: 'test-rbd-pvc'
+# kubeconfig path
+kubeconfig='$HOME/.kube/config'
 # ocs namespace
-name_space: 'openshift-storage'
-# pool name
-pool_name: 'ocs-storagecluster-cephblockpool'
-# rbd size
-rbd_size: '200G'
-# valid rw, write, read
-io_type: 'rw'
-# valid 4K, 8K, 16K, 32K, 64K, 128K, 256K
-io_size: '64K'
-# valid power of 2
-io_threads: '1'
-# valid whatever size in G
-io_total: '3G'
-# valid seq, rand
-io_pattern: 'rand'
-# rwmin if=0 means that rwmix is excluded
-rw_mix_read: 50
-# rbd image name
-rbd_image_name: '{{ rbd_name }}_{{ ansible_hostname }}'
-# path for fio files
-path_fio_files: '/root/ceph_performance'
+name_space: 'testing-ocs-storage'
