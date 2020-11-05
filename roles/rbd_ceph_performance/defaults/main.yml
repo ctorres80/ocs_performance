@@ -2,6 +2,6 @@
 # pvc.yml path
 pvc_yml: './roles/rbd_ceph_performance/templates/pvc.yml'
 # kubeconfig path
-kubeconfig='$HOME/.kube/config'
+kubeconfig: '$HOME/.kube/config'
 # ocs namespace
 name_space: 'testing-ocs-storage'
