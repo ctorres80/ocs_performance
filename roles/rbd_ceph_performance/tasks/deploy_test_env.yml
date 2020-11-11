@@ -35,3 +35,11 @@
   register: fio_pods
   when: fio_pods.user_input != ''
   ignore_errors: yes
+
+- name: Waiting for fio pods ready
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} get pods
+  register: fio_pods
+  when: fio_pods.user_input != ''
+  ignore_errors: yes
