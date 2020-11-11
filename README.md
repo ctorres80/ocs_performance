@@ -28,12 +28,12 @@ The role will automate following workflow:
 
 ## Testing environment
 Following the Openshift cluster information 
-    ```bash
-    [ctorres-redhat.com@bastion ~]$ oc version
-    Client Version: 4.5.7
-    Server Version: 4.6.3
-    Kubernetes Version: v1.19.0+9f84db3
-    ```
+```bash
+[ctorres-redhat.com@bastion ~]$ oc version
+Client Version: 4.5.7
+Server Version: 4.6.3
+Kubernetes Version: v1.19.0+9f84db3
+```
     [ctorres-redhat.com@bastion tools]$ oc get nodes -L kubernetes.io/hostname -L node.kubernetes.io/instance-type -L failure-domain.beta.kubernetes.io/region -L failure-domain.beta.kubernetes.io/zone
     NAME                                            STATUS   ROLES    AGE   VERSION           HOSTNAME          INSTANCE-TYPE   REGION         ZONE
     ip-10-0-145-177.eu-central-1.compute.internal   Ready    worker   12h   v1.19.0+9f84db3   ip-10-0-145-177   m5.4xlarge      eu-central-1   eu-central-1a
