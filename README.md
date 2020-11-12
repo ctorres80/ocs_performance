@@ -14,14 +14,14 @@ This is in an interactive ansible role for performance testing with synthetic be
 - Ansible at least v2.8 
 
 ## Environment configuration
-Openshift cluster information 
+#### Openshift cluster information 
 ```bash
 [ctorres-redhat.com@bastion ~]$ oc version
 Client Version: 4.5.7
 Server Version: 4.6.3
 Kubernetes Version: v1.19.0+9f84db3
 ```
-OpenShift nodes configuration (following labels work with AWS IPI deployment)
+#### OpenShift nodes configuration (following labels work with AWS IPI deployment)
 ```bash
 [ctorres-redhat.com@bastion machinesets]$ oc get nodes -L kubernetes.io/hostname -L node.kubernetes.io/instance-type -L failure-domain.beta.kubernetes.io/region -L failure-domain.beta.kubernetes.io/zone
 NAME                                            STATUS   ROLES    AGE   VERSION           HOSTNAME          INSTANCE-TYPE   REGION         ZONE
@@ -43,7 +43,7 @@ ip-10-0-140-220.eu-central-1.compute.internal   64    503586776Ki
 ip-10-0-183-7.eu-central-1.compute.internal     64    503586776Ki
 ip-10-0-213-116.eu-central-1.compute.internal   64    503587072Ki
 ```
-OCS and local-storage tested versions
+#### OCS and local-storage tested versions
 ```bash
 [ctorres-redhat.com@bastion discovery]$ oc get csv -n openshift-local-storage
 NAME                                           DISPLAY         VERSION                 REPLACES   PHASE
@@ -52,7 +52,7 @@ local-storage-operator.4.5.0-202010301114.p0   Local Storage   4.5.0-20201030111
 NAME                         DISPLAY                       VERSION        REPLACES   PHASE
 ocs-operator.v4.6.0-156.ci   OpenShift Container Storage   4.6.0-156.ci              Succeeded
 ```
-OCS local storage available from pvs
+#### OCS local storage available from pvs
 ```bash
 [ctorres-redhat.com@bastion discovery]$  oc get pv
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                        STORAGECLASS   REASON   AGE
