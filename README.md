@@ -293,10 +293,10 @@ sh-4.4$ df -h | grep rbd
 ```
    - Select the pvc interface `` file `` or `` block ``
    - Select the I/O type, valid parameters: `` read, write, randwrite, randread, readwrite, randrw ``
-        - if you select mixed workloads like `` randrw, readwrite `` more options lke ``R/W ration`` will be required.
+        - if you select mixed workloads like `` randrw, readwrite `` more options like ``R/W ratio`` will be required.
    - Select the I/O size, valid parameters(integer number): `` 4, 8, 16, 32, 64, 128, 256, 1024, 2048, 4096 ``
    - Select the I/O threads, valid parameters(integer number): `` 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 ``
-   - And finally the file size per fio pod, valid parameters(integer number): `` from 1 to 100 ``
+   - And finally the file size of the fio benchmark, valid parameters(integer number): `` from 1 to 100 ``
    - The playbook will run the fio benchmark based on your inputs for at maximum 1 hour
 ```bash
 TASK [rbd_ceph_performance : fio bench read, write, randwrite] **************************************************************************************************************************************************
