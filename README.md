@@ -555,3 +555,16 @@ skipping: [localhost]
 PLAY RECAP ******************************************************************************************************************************************************************************************************
 localhost                  : ok=12   changed=3    unreachable=0    failed=0    skipped=10   rescued=0    ignored=0
 ```
+### Using toolbox for cephrbd monitoring
+```bash
+[ctorres-redhat.com@bastion ~]$ oc -n openshift-storage rsh rook-ceph-tools-85dc5f7bc8-mj6xk
+sh-4.4# rbd perf image iostat
+NAME                                                                               WR   RD  WR_BYTES  RD_BYTES    WR_LAT   RD_LAT
+ocs-storagecluster-cephblockpool/csi-vol-8b8ef8da-24d6-11eb-afdf-0a580a82020d 8.29k/s  0/s  32 MiB/s     0 B/s  12.84 ms  0.00 ns
+ocs-storagecluster-cephblockpool/csi-vol-8608dbbf-24d6-11eb-afdf-0a580a82020d 8.18k/s  0/s  32 MiB/s     0 B/s  12.68 ms  0.00 ns
+ocs-storagecluster-cephblockpool/csi-vol-6be9bc87-24d6-11eb-afdf-0a580a82020d 8.18k/s  0/s  32 MiB/s     0 B/s  12.78 ms  0.00 ns
+ocs-storagecluster-cephblockpool/csi-vol-79a4e26b-24d6-11eb-afdf-0a580a82020d 8.16k/s  0/s  32 MiB/s     0 B/s  12.90 ms  0.00 ns
+ocs-storagecluster-cephblockpool/csi-vol-8197574a-24d6-11eb-afdf-0a580a82020d 8.15k/s  0/s  32 MiB/s     0 B/s  12.81 ms  0.00 ns
+ocs-storagecluster-cephblockpool/csi-vol-741f501c-24d6-11eb-afdf-0a580a82020d 8.07k/s  0/s  32 MiB/s     0 B/s  12.85 ms  0.00 ns
+ocs-storagecluster-cephblockpool/csi-vol-7c021d1f-248c-11eb-afdf-0a580a82020d     2/s  0/s  24 KiB/s     0 B/s   7.78 ms  0.00 ns
+```
