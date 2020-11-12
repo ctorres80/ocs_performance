@@ -4,7 +4,7 @@
 - [Environment configuration](#environment-configuration)
     - [Openshift cluster information](#openshift-cluster-information)
     - [OpenShift nodes configuration](#openshift-nodes-configuration)
-    - [OCS nodes i3.16xlarge AWS instances](#ocs-nodes-i3.16xlarge-aws-instances)
+    - [OCS node resources](#ocs-node-resources)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
@@ -41,7 +41,7 @@ ip-10-0-192-170.eu-central-1.compute.internal   Ready    master   12h   v1.19.0+
 ip-10-0-212-27.eu-central-1.compute.internal    Ready    worker   12h   v1.19.0+9f84db3   ip-10-0-212-27    m5.4xlarge      eu-central-1   eu-central-1c
 ip-10-0-213-116.eu-central-1.compute.internal   Ready    worker   69s   v1.19.0+9f84db3   ip-10-0-213-116   i3.16xlarge     eu-central-1   eu-central-1c
 ```
-### OCS nodes i3.16xlarge AWS instances
+### OCS node resources 
 ```bash
 [ctorres-redhat.com@bastion machinesets]$ oc get nodes -l cluster.ocs.openshift.io/openshift-storage=  -o=custom-columns=NAME:.metadata.name,CPU:.status.capacity.cpu,RAM:.status.capacity.memory
 NAME                                            CPU   RAM
