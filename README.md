@@ -27,7 +27,7 @@ Client Version: 4.5.7
 Server Version: 4.6.3
 Kubernetes Version: v1.19.0+9f84db3
 ```
-In bold the OCS nodes (following labels work with AWS IPI deployment)
+The OCS nodes are "i3.16xlarge" instances (following labels work with AWS IPI deployment)
 ```bash
 [ctorres-redhat.com@bastion machinesets]$ oc get nodes -L kubernetes.io/hostname -L node.kubernetes.io/instance-type -L failure-domain.beta.kubernetes.io/region -L failure-domain.beta.kubernetes.io/zone
 NAME                                            STATUS   ROLES    AGE   VERSION           HOSTNAME          INSTANCE-TYPE   REGION         ZONE
