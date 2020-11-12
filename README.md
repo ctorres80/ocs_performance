@@ -16,6 +16,8 @@
     - [Monitoring performance during benchmark](#monitoring-performance-during-benchmark)
          - [Using Openshift Webconsole and grafana](#using-openshift-webconsole-and-grafana)
          - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
+- [Cleaning environment](#performance-testing)
+    - [Delete all the resources](#clone-the-repo)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.  
@@ -474,4 +476,19 @@ ocs-storagecluster-cephblockpool/csi-vol-79a4e26b-24d6-11eb-afdf-0a580a82020d 8.
 ocs-storagecluster-cephblockpool/csi-vol-8197574a-24d6-11eb-afdf-0a580a82020d 8.15k/s  0/s  32 MiB/s     0 B/s  12.81 ms  0.00 ns
 ocs-storagecluster-cephblockpool/csi-vol-741f501c-24d6-11eb-afdf-0a580a82020d 8.07k/s  0/s  32 MiB/s     0 B/s  12.85 ms  0.00 ns
 ocs-storagecluster-cephblockpool/csi-vol-7c021d1f-248c-11eb-afdf-0a580a82020d     2/s  0/s  24 KiB/s     0 B/s   7.78 ms  0.00 ns
+```
+### Cleaning environment
+#### Delete all the benchmark resources
+Even if the playbook includes a delete option (not enabled) you need to proced from `` oc client `` just avoid to have more control when you delete resources and avoid to forget resources allocated.  
+1. Delete the the resources of both statefulsets
+```bash
+oc -n testing-ocs-storage delete all,pvc --selector app=fio-block-ceph-tools
+oc -n testing-ocs-storage delete all,pvc --selector app=fio-file-ceph-tools
+```
+2. Delete the testing namespace and pvcs
+```bash
+oc project default
+testing-ocs-storage
+[ctorres-redhat.com@bastion ocs_performance]$ oc delete project testing-ocs-storage
+project.project.openshift.io "testing-ocs-storage" deleted
 ```
