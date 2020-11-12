@@ -284,47 +284,61 @@ fio-file-ceph-tools-4    1/1     Running   0          2m33s
 fio-file-ceph-tools-5    1/1     Running   0          2m23s
 ```
 ### Running the fio benchmark pods
-2. As a second step you just need to select from the list the option `` 2 -> fio workloads `` and insert the parameters for the workload that you want to test (random, sequential, small or big block sizes), what's is going to happen ?
-   - The fio pod replicas are consuming OCS pvcs that are mounted on /usr/share/ocs-pvc (same for file and block pods)
-```bash
-[ctorres-redhat.com@bastion ocs_performance]$ oc rsh fio-block-ceph-tools-5
-sh-4.4$ df -h | grep rbd
-/dev/rbd1                              98G   11G   88G  11% /usr/share/ocs-pvc
-```
+2. As a second step you just need to select from the list the option `` 2 -> fio workloads `` and insert the parameters for the workload that you want to test (random, sequential, small or big block sizes):
    - Select the pvc interface `` file `` or `` block ``
    - Select the I/O type, valid parameters: `` read, write, randwrite, randread, readwrite, randrw ``
         - if you select mixed workloads like `` randrw, readwrite `` more options like ``R/W ratio`` will be required.
    - Select the I/O size, valid parameters(integer number): `` 4, 8, 16, 32, 64, 128, 256, 1024, 2048, 4096 ``
    - Select the I/O threads, valid parameters(integer number): `` 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 ``
    - And finally the file size of the fio benchmark, valid parameters(integer number): `` from 1 to 100 ``
+   - The fio pod replicas are consuming OCS pvcs that are mounted on /usr/share/ocs-pvc (same for file and block pods) the benchmark will run on top of the mount point
+```bash
+[ctorres-redhat.com@bastion ocs_performance]$ oc rsh fio-block-ceph-tools-5
+sh-4.4$ df -h | grep rbd
+/dev/rbd1                              98G   11G   88G  11% /usr/share/ocs-pvc
+```
+   - If you want to analyse the fio output the playbook will return the output from each fio pod, you can see the parameters that you have configured with different, following an example:
+```bash
+ok: [localhost] => (item={'cmd': 'export KUBECONFIG=$HOME/.kube/config\noc exec -n testing-ocs-storage fio-block-ceph-tools-15 -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs=4K --iodepth=16 --size=5G --rw=randwrite --nrfiles=1280.0 --refill_buffers=1\n', 'stdout': 'test: (g=0): rw=randwrite, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=16\nfio-3.19\nStarting 1 process\n\ntest: (groupid=0, jobs=1): err= 0: pid=54: Thu Nov 12 14:40:36 2020\n  write: IOPS=1601, BW=6406KiB/s (6560kB/s)(5120MiB/818391msec); 0 zone resets\n   bw (  KiB/s): min= 3560, max=13264, per=100.00%, avg=6413.15, stdev=556.31, samples=1634\n   iops        : min=  890, max= 3316, avg=1603.29, stdev=139.08, samples=1634\n  cpu          : usr=0.82%, sys=2.36%, ctx=1216704, majf=0, minf=8\n  IO depths    : 1=0.1%, 2=0.1%, 4=0.1%, 8=0.1%, 16=100.0%, 32=0.0%, >=64=0.0%\n     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%\n     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.1%, 32=0.0%, 64=0.0%, >=64=0.0%\n     issued rwts: total=0,1310720,0,0 short=0,0,0,0 dropped=0,0,0,0\n     latency   : target=0, window=0, percentile=100.00%, depth=16\n\nRun status group 0 (all jobs):\n  WRITE: bw=6406KiB/s (6560kB/s), 6406KiB/s-6406KiB/s (6560kB/s-6560kB/s), io=5120MiB (5369MB), run=818391-818391msec\n\nDisk stats (read/write):\n  rbd5: ios=0/1310583, merge=0/13488, ticks=0/13037143, in_queue=12382245, util=79.15%', 'stderr': 'Unable to use a TTY - input is not a terminal or the right kind of file', 'rc': 0, 'start': '2020-11-12 14:26:56.200590', 'end': '2020-11-12 14:40:36.276866', 'delta': '0:13:40.076276', 'changed': True, 'invocation': {'module_args': {'_raw_params': 'export KUBECONFIG=$HOME/.kube/config\noc exec -n testing-ocs-storage fio-block-ceph-tools-15 -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs=4K --iodepth=16 --size=5G --rw=randwrite --nrfiles=1280.0 --refill_buffers=1\n', '_uses_shell': True, 'warn': True, 'stdin_add_newline': True, 'strip_empty_ends': True, 'argv': None, 'chdir': None, 'executable': None, 'creates': None, 'removes': None, 'stdin': None}}, 'finished': 1, 'ansible_job_id': '360344232478.85702', 'stdout_lines': ['test: (g=0): rw=randwrite, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=16', 'fio-3.19', 'Starting 1 process', '', 'test: (groupid=0, jobs=1): err= 0: pid=54: Thu Nov 12 14:40:36 2020', '  write: IOPS=1601, BW=6406KiB/s (6560kB/s)(5120MiB/818391msec); 0 zone resets', '   bw (  KiB/s): min= 3560, max=13264, per=100.00%, avg=6413.15, stdev=556.31, samples=1634', '   iops        : min=  890, max= 3316, avg=1603.29, stdev=139.08, samples=1634', '  cpu          : usr=0.82%, sys=2.36%, ctx=1216704, majf=0, minf=8', '  IO depths    : 1=0.1%, 2=0.1%, 4=0.1%, 8=0.1%, 16=100.0%, 32=0.0%, >=64=0.0%', '     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%', '     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.1%, 32=0.0%, 64=0.0%, >=64=0.0%', '     issued rwts: total=0,1310720,0,0 short=0,0,0,0 dropped=0,0,0,0', '     latency   : target=0, window=0, percentile=100.00%, depth=16', '', 'Run status group 0 (all jobs):', '  WRITE: bw=6406KiB/s (6560kB/s), 6406KiB/s-6406KiB/s (6560kB/s-6560kB/s), io=5120MiB (5369MB), run=818391-818391msec', '', 'Disk stats (read/write):', '  rbd5: ios=0/1310583, merge=0/13488, ticks=0/13037143, in_queue=12382245, util=79.15%'], 'stderr_lines': ['Unable to use a TTY - input is not a terminal or the right kind of file'], 'failed': False, 'attempts': 1, 'item': {'started': 1, 'finished': 0, 'ansible_job_id': '360344232478.85702', 'results_file': '/root/.ansible_async/360344232478.85702', 'changed': True, 'failed': False, 'item': 'fio-block-ceph-tools-15', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'}) => {
+    "msg": [
+        "test: (g=0): rw=randwrite, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=16",
+        "fio-3.19",
+        "Starting 1 process",
+        "",
+        "test: (groupid=0, jobs=1): err= 0: pid=54: Thu Nov 12 14:40:36 2020",
+        "  write: IOPS=1601, BW=6406KiB/s (6560kB/s)(5120MiB/818391msec); 0 zone resets",
+        "   bw (  KiB/s): min= 3560, max=13264, per=100.00%, avg=6413.15, stdev=556.31, samples=1634",
+        "   iops        : min=  890, max= 3316, avg=1603.29, stdev=139.08, samples=1634",
+        "  cpu          : usr=0.82%, sys=2.36%, ctx=1216704, majf=0, minf=8",
+        "  IO depths    : 1=0.1%, 2=0.1%, 4=0.1%, 8=0.1%, 16=100.0%, 32=0.0%, >=64=0.0%",
+        "     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%",
+        "     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.1%, 32=0.0%, 64=0.0%, >=64=0.0%",
+        "     issued rwts: total=0,1310720,0,0 short=0,0,0,0 dropped=0,0,0,0",
+        "     latency   : target=0, window=0, percentile=100.00%, depth=16",
+        "",
+        "Run status group 0 (all jobs):",
+        "  WRITE: bw=6406KiB/s (6560kB/s), 6406KiB/s-6406KiB/s (6560kB/s-6560kB/s), io=5120MiB (5369MB), run=818391-818391msec",
+        "",
+        "Disk stats (read/write):",
+        "  rbd5: ios=0/1310583, merge=0/13488, ticks=0/13037143, in_queue=12382245, util=79.15%"
+    ]
+}
+```
+   - We are using several files instead of single one because in cephfs we want to create more files for metadata workload, following the formula:
+```bash
+--nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }}
+``` 
    - The playbook will run the fio benchmark based on your inputs for at maximum 1 hour
 ```bash
 TASK [rbd_ceph_performance : fio bench read, write, randwrite] **************************************************************************************************************************************************
 changed: [localhost] => (item=fio-block-ceph-tools-0)
 changed: [localhost] => (item=fio-block-ceph-tools-1)
-changed: [localhost] => (item=fio-block-ceph-tools-10)
-changed: [localhost] => (item=fio-block-ceph-tools-11)
-changed: [localhost] => (item=fio-block-ceph-tools-12)
-changed: [localhost] => (item=fio-block-ceph-tools-13)
-changed: [localhost] => (item=fio-block-ceph-tools-14)
-changed: [localhost] => (item=fio-block-ceph-tools-15)
-changed: [localhost] => (item=fio-block-ceph-tools-16)
-changed: [localhost] => (item=fio-block-ceph-tools-17)
-changed: [localhost] => (item=fio-block-ceph-tools-18)
-changed: [localhost] => (item=fio-block-ceph-tools-19)
 changed: [localhost] => (item=fio-block-ceph-tools-2)
-changed: [localhost] => (item=fio-block-ceph-tools-20)
-changed: [localhost] => (item=fio-block-ceph-tools-21)
-changed: [localhost] => (item=fio-block-ceph-tools-22)
-changed: [localhost] => (item=fio-block-ceph-tools-23)
 changed: [localhost] => (item=fio-block-ceph-tools-3)
 changed: [localhost] => (item=fio-block-ceph-tools-4)
 changed: [localhost] => (item=fio-block-ceph-tools-5)
-changed: [localhost] => (item=fio-block-ceph-tools-6)
-changed: [localhost] => (item=fio-block-ceph-tools-7)
-changed: [localhost] => (item=fio-block-ceph-tools-8)
-changed: [localhost] => (item=fio-block-ceph-tools-9)
 ```
+Following an example of 4K workload, 10GB size, on 6 parallel `` fio pods ``:   
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
