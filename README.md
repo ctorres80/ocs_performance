@@ -7,7 +7,8 @@
     - [OCS node resources](#ocs-node-resources)
     - [OCS SW tested versions](#ocs-sw-tested-versions)
     - [OCS local storage pvs available](#ocs-local-storage-pvs-available)
-    - [OCS osds pods](#ocs-osds-pods) 
+    - [OCS osds pods](#ocs-osds-pods)
+    - [Label OCS nodes as infra nodes](#label-ocs-nodes-as-infra-nodes)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
@@ -120,6 +121,15 @@ rook-ceph-osd-7-7bb6bf55c-r28jd     1/1     Running   0          6m42s
 rook-ceph-osd-8-6f5c5786f9-s9f2g    1/1     Running   0          6m41s
 rook-ceph-osd-9-7bd5597b77-wqtbb    1/1     Running   0          6m40s
 ```
+### Label OCS nodes as infra nodes
+```bash
+[ctorres-redhat.com@bastion ocs_performance]$ oc label nodes ip-10-0-140-220.eu-central-1.compute.internal node-role.kubernetes.io/infra=''
+node/ip-10-0-140-220.eu-central-1.compute.internal labeled
+[ctorres-redhat.com@bastion ocs_performance]$ oc label nodes ip-10-0-183-7.eu-central-1.compute.internal node-role.kubernetes.io/infra=''
+node/ip-10-0-183-7.eu-central-1.compute.internal labeled
+[ctorres-redhat.com@bastion ocs_performance]$ oc label nodes ip-10-0-213-116.eu-central-1.compute.internal node-role.kubernetes.io/infra=''
+node/ip-10-0-213-116.eu-central-1.compute.internal labeled
+```
 ## Performance testing
 #### 1. Clone the repo
 ```bash
@@ -134,5 +144,241 @@ Resolving deltas: 100% (138/138), done.
 ```
 #### 2. Running the ansible role to deploy statefulsets
 ```bash
+[ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
 
+PLAY [Using ansible rbd_ceph_performance role] ******************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ******************************************************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+Select the task number:
+    - 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage)
+    - 2 -> fio workloads
+    - 3 -> clean-fio-tests
+    - 4 -> s3cmd-sync
+    - 5 -> s3cmd-delete
+    - 6 -> delete-fio-pods
+:
+1
+ok: [localhost]
+
+TASK [rbd_ceph_performance : create environment test] ***********************************************************************************************************************************************************
+included: /home/ctorres-redhat.com/ocs_performance/roles/rbd_ceph_performance/tasks/deploy_test_env.yml for localhost
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+OCS cluster:
+- internal
+- external
+:
+internal
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+How many fio pods ?
+:
+6
+ok: [localhost]
+
+TASK [rbd_ceph_performance : Create the statefulset external] ***************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : Create the statefulset internal] ***************************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": true, "cmd": "export KUBECONFIG=$HOME/.kube/config\noc create -f roles/rbd_ceph_performance/templates/fio-block.yml\noc create -f roles/rbd_ceph_performance/templates/fio-file.yml\n", "delta": "0:00:00.622137", "end": "2020-11-12 11:01:31.196085", "msg": "non-zero return code", "rc": 1, "start": "2020-11-12 11:01:30.573948", "stderr": "Error from server (AlreadyExists): error when creating \"roles/rbd_ceph_performance/templates/fio-block.yml\": namespaces \"testing-ocs-storage\" already exists\nError from server (AlreadyExists): error when creating \"roles/rbd_ceph_performance/templates/fio-file.yml\": namespaces \"testing-ocs-storage\" already exists", "stderr_lines": ["Error from server (AlreadyExists): error when creating \"roles/rbd_ceph_performance/templates/fio-block.yml\": namespaces \"testing-ocs-storage\" already exists", "Error from server (AlreadyExists): error when creating \"roles/rbd_ceph_performance/templates/fio-file.yml\": namespaces \"testing-ocs-storage\" already exists"], "stdout": "statefulset.apps/fio-block-ceph-tools created\nstatefulset.apps/fio-file-ceph-tools created", "stdout_lines": ["statefulset.apps/fio-block-ceph-tools created", "statefulset.apps/fio-file-ceph-tools created"]}
+...ignoring
+
+TASK [rbd_ceph_performance : Scale fio for OCS internal to 6 pods in namespace testing-ocs-storage] *************************************************************************************************************
+changed: [localhost]
+
+TASK [rbd_ceph_performance : debug] *****************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "msg": "Waiting for 60 seconds"
+}
+
+TASK [rbd_ceph_performance : Waiting for fio pods ready] ********************************************************************************************************************************************************
+Pausing for 60 seconds
+(ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
+ok: [localhost]
+
+TASK [rbd_ceph_performance : Print fio available pods] **********************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [rbd_ceph_performance : fio pods avaialble for OCS testing internal in namespace testing-ocs-storage] ******************************************************************************************************
+ok: [localhost] => {
+    "msg": [
+        "NAME                     READY   STATUS              RESTARTS   AGE",
+        "fio-block-ceph-tools-0   1/1     Running             0          61s",
+        "fio-block-ceph-tools-1   1/1     Running             0          47s",
+        "fio-block-ceph-tools-2   1/1     Running             0          38s",
+        "fio-block-ceph-tools-3   1/1     Running             0          24s",
+        "fio-block-ceph-tools-4   1/1     Running             0          17s",
+        "fio-block-ceph-tools-5   0/1     ContainerCreating   0          8s",
+        "fio-file-ceph-tools-0    1/1     Running             0          61s",
+        "fio-file-ceph-tools-1    1/1     Running             0          46s",
+        "fio-file-ceph-tools-2    1/1     Running             0          35s",
+        "fio-file-ceph-tools-3    1/1     Running             0          26s",
+        "fio-file-ceph-tools-4    1/1     Running             0          17s",
+        "fio-file-ceph-tools-5    0/1     ContainerCreating   0          7s"
+    ]
+}
+
+TASK [rbd_ceph_performance : fio benchmark] *********************************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : clean-fio-test] ********************************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : s3cmd testing] *********************************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : s3cmd delete] **********************************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : fio delete environment test] *******************************************************************************************************************************************************
+skipping: [localhost]
+
+PLAY RECAP ******************************************************************************************************************************************************************************************************
+localhost                  : ok=11   changed=3    unreachable=0    failed=0    skipped=6    rescued=0    ignored=1
+```
+If the project or the statefulset already existing ansible will return warnings that it will skip. 
+Is recommended to check if statefulset and fio pods have been created with the number of replicas required in our previous example ``6``, you can check from the playbook output or you can run 
+```bash
+[ctorres-redhat.com@bastion ocs_performance]$ oc get pods -n testing-ocs-storage
+NAME                     READY   STATUS    RESTARTS   AGE
+fio-block-ceph-tools-0   1/1     Running   0          3m17s
+fio-block-ceph-tools-1   1/1     Running   0          3m3s
+fio-block-ceph-tools-2   1/1     Running   0          2m54s
+fio-block-ceph-tools-3   1/1     Running   0          2m40s
+fio-block-ceph-tools-4   1/1     Running   0          2m33s
+fio-block-ceph-tools-5   1/1     Running   0          2m24s
+fio-file-ceph-tools-0    1/1     Running   0          3m17s
+fio-file-ceph-tools-1    1/1     Running   0          3m2s
+fio-file-ceph-tools-2    1/1     Running   0          2m51s
+fio-file-ceph-tools-3    1/1     Running   0          2m42s
+fio-file-ceph-tools-4    1/1     Running   0          2m33s
+fio-file-ceph-tools-5    1/1     Running   0          2m23s
+```
+
+```bash
+[ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
+
+PLAY [Using ansible rbd_ceph_performance role] ******************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ******************************************************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+Select the task number:
+    - 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage)
+    - 2 -> fio workloads
+    - 3 -> clean-fio-tests
+    - 4 -> s3cmd-sync
+    - 5 -> s3cmd-delete
+    - 6 -> delete-fio-pods
+:
+2
+ok: [localhost]
+
+TASK [rbd_ceph_performance : create environment test] ***********************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : fio benchmark] *********************************************************************************************************************************************************************
+included: /home/ctorres-redhat.com/ocs_performance/roles/rbd_ceph_performance/tasks/fio-tests.yml for localhost
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+Storage interface:
+- file
+- block
+:
+block
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+Valid I/O type:
+- read
+- write
+- randwrite
+- randread
+- readwrite
+- randrw
+:
+randwrite
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+Valid I/O size in KB example:
+- 4, 8, 16, 32, 64, 128, 256, 1024, 2048, 4096 ?
+:
+4
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+Valid io_threads example:
+- 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096
+:
+128
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+IO in GB total in GB (max 100):
+:
+10
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : pause] *****************************************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : Collect fio-block-ceph-tool pod names] *********************************************************************************************************************************************
+changed: [localhost]
+
+TASK [rbd_ceph_performance : fio bench mixed rbd rw] ************************************************************************************************************************************************************
+skipping: [localhost] => (item=fio-block-ceph-tools-0)
+skipping: [localhost] => (item=fio-block-ceph-tools-1)
+skipping: [localhost] => (item=fio-block-ceph-tools-2)
+skipping: [localhost] => (item=fio-block-ceph-tools-3)
+skipping: [localhost] => (item=fio-block-ceph-tools-4)
+skipping: [localhost] => (item=fio-block-ceph-tools-5)
+
+TASK [rbd_ceph_performance : Wait for fio mixed rw jobs to finish] **********************************************************************************************************************************************
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-0', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-1', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-2', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-3', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-4', 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-5', 'ansible_loop_var': 'item'})
+
+TASK [rbd_ceph_performance : Print benchmarks stats] ************************************************************************************************************************************************************
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-0', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-1', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-2', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-3', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-4', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
+skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-5', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : fio bench read, write, randwrite] **************************************************************************************************************************************************
+changed: [localhost] => (item=fio-block-ceph-tools-0)
+changed: [localhost] => (item=fio-block-ceph-tools-1)
+changed: [localhost] => (item=fio-block-ceph-tools-2)
+changed: [localhost] => (item=fio-block-ceph-tools-3)
+changed: [localhost] => (item=fio-block-ceph-tools-4)
+changed: [localhost] => (item=fio-block-ceph-tools-5)
+
+TASK [rbd_ceph_performance : Wait for fio jobs to finish] *******************************************************************************************************************************************************
+FAILED - RETRYING: Wait for fio jobs to finish (360 retries left).
+...
 ```

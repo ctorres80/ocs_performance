@@ -41,7 +41,7 @@
 # Pause to get some sensitive input.
 - name: Waiting for fio pods ready
   pause:
-    seconds: "{{ fio_pods.user_input | int * 5 }}"
+    seconds: "{{ fio_pods.user_input | int * 10 }}"
 
 - name: Print fio available pods
   shell: |
