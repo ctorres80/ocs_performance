@@ -2,7 +2,9 @@
 - [Introduction](#Introduction)
 - [Requirements](#Requirements)
 - [Environment configuration](#environment-configuration)
-   - [Openshift cluster information](#openshift-cluster-information)
+    - [Openshift cluster information](#openshift-cluster-information)
+    - [OpenShift nodes configuration](#openshift-nodes-configuration)
+    - [OCS nodes i3.16xlarge AWS instances](#OCS-nodes-i3.16xlarge-AWS-instances)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
@@ -25,7 +27,7 @@ Client Version: 4.5.7
 Server Version: 4.6.3
 Kubernetes Version: v1.19.0+9f84db3
 ```
-### OpenShift nodes configuration (following labels work with AWS IPI deployment)
+### OpenShift nodes configuration
 ```bash
 [ctorres-redhat.com@bastion machinesets]$ oc get nodes -L kubernetes.io/hostname -L node.kubernetes.io/instance-type -L failure-domain.beta.kubernetes.io/region -L failure-domain.beta.kubernetes.io/zone
 NAME                                            STATUS   ROLES    AGE   VERSION           HOSTNAME          INSTANCE-TYPE   REGION         ZONE
@@ -39,7 +41,7 @@ ip-10-0-192-170.eu-central-1.compute.internal   Ready    master   12h   v1.19.0+
 ip-10-0-212-27.eu-central-1.compute.internal    Ready    worker   12h   v1.19.0+9f84db3   ip-10-0-212-27    m5.4xlarge      eu-central-1   eu-central-1c
 ip-10-0-213-116.eu-central-1.compute.internal   Ready    worker   69s   v1.19.0+9f84db3   ip-10-0-213-116   i3.16xlarge     eu-central-1   eu-central-1c
 ```
-### OCS node configuration, we are using "i3.16xlarge" AWS instances
+### OCS nodes i3.16xlarge AWS instances
 ```bash
 [ctorres-redhat.com@bastion machinesets]$ oc get nodes -l cluster.ocs.openshift.io/openshift-storage=  -o=custom-columns=NAME:.metadata.name,CPU:.status.capacity.cpu,RAM:.status.capacity.memory
 NAME                                            CPU   RAM
