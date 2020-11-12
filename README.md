@@ -404,30 +404,7 @@ skipping: [localhost]
 TASK [rbd_ceph_performance : Collect fio-block-ceph-tool pod names] *********************************************************************************************************************************************
 changed: [localhost]
 
-TASK [rbd_ceph_performance : fio bench mixed rbd rw] ************************************************************************************************************************************************************
-skipping: [localhost] => (item=fio-block-ceph-tools-0)
-skipping: [localhost] => (item=fio-block-ceph-tools-1)
-skipping: [localhost] => (item=fio-block-ceph-tools-2)
-skipping: [localhost] => (item=fio-block-ceph-tools-3)
-skipping: [localhost] => (item=fio-block-ceph-tools-4)
-skipping: [localhost] => (item=fio-block-ceph-tools-5)
-
-TASK [rbd_ceph_performance : Wait for fio mixed rw jobs to finish] **********************************************************************************************************************************************
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-0', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-1', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-2', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-3', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-4', 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-5', 'ansible_loop_var': 'item'})
-
-TASK [rbd_ceph_performance : Print benchmarks stats] ************************************************************************************************************************************************************
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-0', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-1', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-2', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-3', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-4', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
-skipping: [localhost] => (item={'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': {'changed': False, 'skipped': True, 'skip_reason': 'Conditional result was False', 'item': 'fio-block-ceph-tools-5', 'ansible_loop_var': 'item'}, 'ansible_loop_var': 'item'})
-skipping: [localhost]
+...
 
 TASK [rbd_ceph_performance : fio bench read, write, randwrite] **************************************************************************************************************************************************
 changed: [localhost] => (item=fio-block-ceph-tools-0)
