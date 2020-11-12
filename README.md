@@ -455,7 +455,9 @@ ok: [localhost] => (item={'cmd': 'export KUBECONFIG=$HOME/.kube/config\noc exec 
 ...
 ```
 ### Monitoring performance during benchmark
-We have two options for real time monitoring CLI from the toolbox or much better OpenShift Webconsole and Grafana (you can keep a history about your benchmarks)
+We have two options for real time monitoring:  
+- CLI from the toolbox
+- OpenShift Webconsole and Grafana (preferred)  
 #### Using Openshift Webconsole and grafana
 ![alt text](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/performance_screenshot.png?raw=true)
 #### Using toolbox for cephrbd monitoring
