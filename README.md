@@ -17,7 +17,7 @@
          - [Using Openshift Webconsole and grafana](#using-openshift-webconsole-and-grafana)
          - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
 - [Cleaning environment](#cleaning-environment)
-    - [Delete all the resources](#delete-all-the-resources)
+    - [Delete all](#delete-all)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.  
@@ -478,7 +478,7 @@ ocs-storagecluster-cephblockpool/csi-vol-741f501c-24d6-11eb-afdf-0a580a82020d 8.
 ocs-storagecluster-cephblockpool/csi-vol-7c021d1f-248c-11eb-afdf-0a580a82020d     2/s  0/s  24 KiB/s     0 B/s   7.78 ms  0.00 ns
 ```
 ### Cleaning environment
-#### Delete all the benchmark resources
+#### Delete all
 Even if the playbook includes a delete option (not enabled) you need to use `` oc client `` to have more control when you delete resources and avoid to forget resources allocated.  
 1. Delete the the resources of both statefulsets
 ```bash
