@@ -2,7 +2,7 @@
 - [Introduction](#Introduction)
 - [Requirements](#Requirements)
 - [Environment configuration](#Environment)
-  - [Openshift cluster information](#OpenShift Cluster)
+  - [Openshift cluster information](#Openshift cluster information)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
