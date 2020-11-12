@@ -247,7 +247,7 @@ localhost                  : ok=11   changed=3    unreachable=0    failed=0    s
 ```
 | WARNING: If the project or the statefulset already existing ansible will return warnings and ignore errors.|
 | --- |    
-Is recommended to check if statefulset and fio pods have been created with the number of replicas required in our previous example ``6``, you can check from the playbook output or you can run 
+I recommended to check if statefulset and fio pods replicas have been created, in our previous example ``6``, you can check from the last output or you can run `` oc get pods -n testing-ocs-storage ``
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc get pods -n testing-ocs-storage
 NAME                     READY   STATUS    RESTARTS   AGE
