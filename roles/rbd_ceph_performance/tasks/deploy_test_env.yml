@@ -36,7 +36,7 @@
   ignore_errors: yes
 
 - debug:
-    msg: "Waiting for {{ fio_pods.user_input | int * 5 }} seconds" #multiplication 5 seconds per pod
+    msg: "Waiting for {{ fio_pods.user_input | int * 10 }} seconds" #multiplication 5 seconds per pod
 
 # Pause to get some sensitive input.
 - name: Waiting for fio pods ready
@@ -51,6 +51,6 @@
   when: fio_pods.user_input != ''
   ignore_errors: yes
 
-- name: "fio pods avaialble for OCS testing {{ ocs_cluster.user_input }} in namespace {{ name_space }} "
+- name: "fio pods available for OCS testing {{ ocs_cluster.user_input }} in namespace {{ name_space }} "
   debug:
     msg: "{{ fio_pods_print.stdout_lines }}"
