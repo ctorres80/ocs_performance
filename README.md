@@ -245,7 +245,7 @@ skipping: [localhost]
 PLAY RECAP ******************************************************************************************************************************************************************************************************
 localhost                  : ok=11   changed=3    unreachable=0    failed=0    skipped=6    rescued=0    ignored=1
 ```
-If the project or the statefulset already existing ansible will return warnings that it will skip. 
+> :warning: **If the project or the statefulset already existing ansible will return warnings and ignore errors.** 
 Is recommended to check if statefulset and fio pods have been created with the number of replicas required in our previous example ``6``, you can check from the playbook output or you can run 
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc get pods -n testing-ocs-storage
