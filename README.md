@@ -10,7 +10,7 @@
     - [OCS osds pods](#ocs-osds-pods)
     - [Label OCS nodes as infra nodes](#label-ocs-nodes-as-infra-nodes)
 - [Performance testing](#performance-testing)
-    - [Clone the repo](#clone-the-repo)
+    - [Clone the repo](#1.-clone-the-repo)
     - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
 
 ## Introduction 
@@ -135,7 +135,7 @@ node/ip-10-0-183-7.eu-central-1.compute.internal labeled
 node/ip-10-0-213-116.eu-central-1.compute.internal labeled
 ```
 ## Performance testing
-#### 1. Clone the repo
+#### 1.Clone the repo
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ pwd
 /home/ctorres-redhat.com/ocs_performance
