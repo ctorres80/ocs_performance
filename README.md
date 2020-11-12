@@ -1,4 +1,4 @@
-# Synthetic benchmarking tool for OpenShift Container Storage for block and file interfaces
+# Synthetic benchmark tool for block and file persistent volumes in OpenShift Container Storage
 - [Introduction](#Introduction)
 - [Requirements](#Requirements)
 - [Environment configuration](#environment-configuration)
@@ -7,7 +7,7 @@
     - [OCS node resources](#ocs-node-resources)
     - [OCS SW tested versions](#ocs-sw-tested-versions)
     - [OCS local storage pvs available](#ocs-local-storage-pvs-available)
-   - [OCS osds pods](#ocs-osds-pods) 
+    - [OCS osds pods](#ocs-osds-pods) 
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
@@ -134,69 +134,5 @@ Resolving deltas: 100% (138/138), done.
 ```
 #### 2. Running the ansible role to deploy statefulsets
 ```bash
-[ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
-[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
-
-PLAY [Using ansible rbd_ceph_performance role] ********************************************************************************************************************************************************
-
-TASK [Gathering Facts] ********************************************************************************************************************************************************************************
-ok: [localhost]
-
-TASK [rbd_ceph_performance : pause] *******************************************************************************************************************************************************************
-[rbd_ceph_performance : pause]
-Select the task number:
-    - 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage)
-    - 2 -> fio workloads
-    - 3 -> clean-fio-tests
-    - 4 -> s3cmd-sync
-    - 5 -> s3cmd-delete
-    - 6 -> delete-fio-pods
-: 1
-ok: [localhost]
-
-TASK [rbd_ceph_performance : create environment test] *************************************************************************************************************************************************
-included: /home/ctorres-redhat.com/ocs_performance/roles/rbd_ceph_performance/tasks/deploy_test_env.yml for localhost
-
-TASK [rbd_ceph_performance : pause] *******************************************************************************************************************************************************************
-[rbd_ceph_performance : pause]
-OCS cluster:
-- internal
-- external
-: internal
-ok: [localhost]
-
-TASK [rbd_ceph_performance : pause] *******************************************************************************************************************************************************************
-[rbd_ceph_performance : pause]
-How many fio pods ?
-: 24
-ok: [localhost]
-
-TASK [rbd_ceph_performance : Create the statefulset external] *****************************************************************************************************************************************
-skipping: [localhost]
-
-TASK [rbd_ceph_performance : Create the statefulset internal] *****************************************************************************************************************************************
-fatal: [localhost]: FAILED! => {"changed": true, "cmd": "export KUBECONFIG=$HOME/.kube/config\noc create -f roles/rbd_ceph_performance/templates/fio-block.yml\noc create -f roles/rbd_ceph_performance/templates/fio-file.yml\n", "delta": "0:00:00.543063", "end": "2020-11-12 02:23:28.411679", "msg": "non-zero return code", "rc": 1, "start": "2020-11-12 02:23:27.868616", "stderr": "Error from server (AlreadyExists): error when creating \"roles/rbd_ceph_performance/templates/fio-file.yml\": namespaces \"testing-ocs-storage\" already exists", "stderr_lines": ["Error from server (AlreadyExists): error when creating \"roles/rbd_ceph_performance/templates/fio-file.yml\": namespaces \"testing-ocs-storage\" already exists"], "stdout": "namespace/testing-ocs-storage created\nstatefulset.apps/fio-block-ceph-tools created\nstatefulset.apps/fio-file-ceph-tools created", "stdout_lines": ["namespace/testing-ocs-storage created", "statefulset.apps/fio-block-ceph-tools created", "statefulset.apps/fio-file-ceph-tools created"]}
-...ignoring
-
-TASK [rbd_ceph_performance : Scale fio-{{ ocs_interface.user_input  }}-{{ ocs_cluster.user_input  }} pods] ********************************************************************************************
-changed: [localhost]
-
-TASK [rbd_ceph_performance : fio benchmark] ***********************************************************************************************************************************************************
-skipping: [localhost]
-
-TASK [rbd_ceph_performance : clean-fio-test] **********************************************************************************************************************************************************
-skipping: [localhost]
-
-TASK [rbd_ceph_performance : s3cmd testing] ***********************************************************************************************************************************************************
-skipping: [localhost]
-
-TASK [rbd_ceph_performance : s3cmd delete] ************************************************************************************************************************************************************
-skipping: [localhost]
-
-TASK [rbd_ceph_performance : fio delete environment test] *********************************************************************************************************************************************
-skipping: [localhost]
-
-PLAY RECAP ********************************************************************************************************************************************************************************************
-localhost                  : ok=8    changed=2    unreachable=0    failed=0    skipped=6    rescued=0    ignored=2
 
 ```
