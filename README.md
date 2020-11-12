@@ -12,6 +12,7 @@
 - [Performance testing](#performance-testing)
     - [Clone the repo](#clone-the-repo)
     - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
+    - 
     - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
 
 ## Introduction 
@@ -148,7 +149,7 @@ Receiving objects: 100% (394/394), 56.47 KiB | 713.00 KiB/s, done.
 Resolving deltas: 100% (138/138), done.
 ```
 ### Deploy the environment with the fio statefulsets
-1. The ansible role is interactive, you will see a list of options where the option ``1`` is the environment deployment.  
+1. The ansible role is interactive, you will see a list of options where the option `` 1 deploy fio file and block statefulset and pods (project=testing-ocs-storage) `` is the environment deployment.  
    - It will create a namespace `` testing-ocs-storage ``
    - Deploy two statefulsets:
         - fio-block-ceph-tools -> for cephrbd pvcs consumed by fio pods
@@ -282,7 +283,48 @@ fio-file-ceph-tools-3    1/1     Running   0          2m42s
 fio-file-ceph-tools-4    1/1     Running   0          2m33s
 fio-file-ceph-tools-5    1/1     Running   0          2m23s
 ```
-
+### Run the fio benchmark
+2. As a second step you just need to select from the list the option `` 2 -> fio workloads `` and insert the parameter for the workload that you want to test, what's is going to happen ?
+   - The fio pod replicas are consuming OCS pvcs that are mounted on /usr/share/ocs-pvc (same for file and block pods)
+```bash
+[ctorres-redhat.com@bastion ocs_performance]$ oc rsh fio-block-ceph-tools-5
+sh-4.4$ df -h | grep rbd
+/dev/rbd1                              98G   11G   88G  11% /usr/share/ocs-pvc
+```
+   - Select the pvc interface `` file `` or `` block ``
+   - Select the I/O type, valid parameters: `` read, write, randwrite, randread, readwrite, randrw ``
+        - if you select mixed workloads like `` randrw, readwrite `` more options lke ``R/W ration`` will be required.
+   - Select the I/O size, valid parameters(integer number): `` 4, 8, 16, 32, 64, 128, 256, 1024, 2048, 4096 ``
+   - Select the I/O threads, valid parameters(integer number): `` 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 ``
+   - And finally the file size per fio pod, valid parameters(integer number): `` from 1 to 100 ``
+   - The playbook will run the fio benchmark based on your inputs for at maximum 1 hour
+```bash
+TASK [rbd_ceph_performance : fio bench read, write, randwrite] **************************************************************************************************************************************************
+changed: [localhost] => (item=fio-block-ceph-tools-0)
+changed: [localhost] => (item=fio-block-ceph-tools-1)
+changed: [localhost] => (item=fio-block-ceph-tools-10)
+changed: [localhost] => (item=fio-block-ceph-tools-11)
+changed: [localhost] => (item=fio-block-ceph-tools-12)
+changed: [localhost] => (item=fio-block-ceph-tools-13)
+changed: [localhost] => (item=fio-block-ceph-tools-14)
+changed: [localhost] => (item=fio-block-ceph-tools-15)
+changed: [localhost] => (item=fio-block-ceph-tools-16)
+changed: [localhost] => (item=fio-block-ceph-tools-17)
+changed: [localhost] => (item=fio-block-ceph-tools-18)
+changed: [localhost] => (item=fio-block-ceph-tools-19)
+changed: [localhost] => (item=fio-block-ceph-tools-2)
+changed: [localhost] => (item=fio-block-ceph-tools-20)
+changed: [localhost] => (item=fio-block-ceph-tools-21)
+changed: [localhost] => (item=fio-block-ceph-tools-22)
+changed: [localhost] => (item=fio-block-ceph-tools-23)
+changed: [localhost] => (item=fio-block-ceph-tools-3)
+changed: [localhost] => (item=fio-block-ceph-tools-4)
+changed: [localhost] => (item=fio-block-ceph-tools-5)
+changed: [localhost] => (item=fio-block-ceph-tools-6)
+changed: [localhost] => (item=fio-block-ceph-tools-7)
+changed: [localhost] => (item=fio-block-ceph-tools-8)
+changed: [localhost] => (item=fio-block-ceph-tools-9)
+```
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
