@@ -149,7 +149,7 @@ Receiving objects: 100% (394/394), 56.47 KiB | 713.00 KiB/s, done.
 Resolving deltas: 100% (138/138), done.
 ```
 ### Deploy the environment with the fio statefulsets
-1. The ansible role is interactive, you will see a list of options where the option `` 1 deploy fio file and block statefulset and pods (project=testing-ocs-storage) `` is the environment deployment.  
+1. The ansible role is interactive, you will see a list of options where the option `` 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage) `` is the environment deployment.  
    - It will create a namespace `` testing-ocs-storage ``
    - Deploy two statefulsets:
         - fio-block-ceph-tools -> for cephrbd pvcs consumed by fio pods
