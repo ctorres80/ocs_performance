@@ -36,10 +36,20 @@
   when: fio_pods.user_input != ''
   ignore_errors: yes
 
+- debug:
+      msg: "Waiting for {{ fio_pods.user_input | int * 5 }} for pod readyness" #multiplication 5 seconds per pod
+
+# Pause to get some sensitive input.
 - name: Waiting for fio pods ready
+  pause:
+    seconds: "{{ fio_pods.user_input | int * 5 }}
+
+- name: Print fio available pods
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc -n {{ name_space }} get pods
   register: fio_pods
   when: fio_pods.user_input != ''
   ignore_errors: yes
+
+  
