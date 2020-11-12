@@ -16,8 +16,8 @@
     - [Monitoring performance during benchmark](#monitoring-performance-during-benchmark)
          - [Using Openshift Webconsole and grafana](#using-openshift-webconsole-and-grafana)
          - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
-- [Cleaning environment](#performance-testing)
-    - [Delete all the resources](#clone-the-repo)
+- [Cleaning environment](#cleaning-environment)
+    - [Delete all the resources](#delete-all-the-resources)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.  
