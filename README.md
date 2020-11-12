@@ -12,6 +12,7 @@
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
+If you already deployed an OCS cluster you can move to [Performance testing](#performance-testing)
 
 ## Requirements
 - OpenShift Container Platform v4.2+ 
