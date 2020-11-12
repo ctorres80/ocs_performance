@@ -6,7 +6,8 @@
     - [OpenShift nodes configuration](#openshift-nodes-configuration)
     - [OCS node resources](#ocs-node-resources)
     - [OCS SW tested versions](#ocs-sw-tested-versions)
-    - [OCS local storage available from pvs](#ocs-local-storage)
+    - [OCS local storage pvs available](#ocs-local-storage-pvs-available)
+   - [OCS osds pods](#ocs-osds-pods) 
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
@@ -60,7 +61,7 @@ local-storage-operator.4.5.0-202010301114.p0   Local Storage   4.5.0-20201030111
 NAME                         DISPLAY                       VERSION        REPLACES   PHASE
 ocs-operator.v4.6.0-156.ci   OpenShift Container Storage   4.6.0-156.ci              Succeeded
 ```
-### OCS local storage available from pvs
+### OCS local storage pvs available
 ```bash
 [ctorres-redhat.com@bastion discovery]$  oc get pv
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                        STORAGECLASS   REASON   AGE
@@ -90,7 +91,7 @@ local-pv-ecac9549                          1769Gi     RWO            Delete     
 local-pv-eff870f2                          1769Gi     RWO            Delete           Available                                localblock              12s
 pvc-59353490-6a69-4a80-a6c6-8e559a501538   1Gi        RWO            Delete           Bound       terminal/terminal-hub-data   gp2                     15h
 ```
-### OCS osds that are consuming the previous local-storage pvs
+### OCS osds pods
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc get pods -l app=rook-ceph-osd
 NAME                                READY   STATUS    RESTARTS   AGE
