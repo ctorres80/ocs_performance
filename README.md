@@ -82,7 +82,7 @@ local-pv-ecac9549                          1769Gi     RWO            Delete     
 local-pv-eff870f2                          1769Gi     RWO            Delete           Available                                localblock              12s
 pvc-59353490-6a69-4a80-a6c6-8e559a501538   1Gi        RWO            Delete           Bound       terminal/terminal-hub-data   gp2                     15h
 ```
-#### OCS osds that consumed the previous pvs
+#### OCS osds that are consuming the previous local-storage pvs
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc get pods -l app=rook-ceph-osd
 NAME                                READY   STATUS    RESTARTS   AGE
@@ -111,4 +111,83 @@ rook-ceph-osd-7-7bb6bf55c-r28jd     1/1     Running   0          6m42s
 rook-ceph-osd-8-6f5c5786f9-s9f2g    1/1     Running   0          6m41s
 rook-ceph-osd-9-7bd5597b77-wqtbb    1/1     Running   0          6m40s
 ```
-## Openshift Container Storage deployment from WEB UI
+## Performance testing
+#### 1. Clone the repo
+```bash
+[ctorres-redhat.com@bastion ~]$ git clone https://github.com/ctorres80/ocs_performance.git
+Cloning into 'ocs_performance'...
+remote: Enumerating objects: 394, done.
+remote: Counting objects: 100% (394/394), done.
+remote: Compressing objects: 100% (215/215), done.
+remote: Total 394 (delta 138), reused 374 (delta 118), pack-reused 0
+Receiving objects: 100% (394/394), 56.47 KiB | 713.00 KiB/s, done.
+Resolving deltas: 100% (138/138), done.
+```
+#### 2. Running the ansible role to deploy statefulsets
+```bash
+[ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
+
+PLAY [Using ansible rbd_ceph_performance role] ********************************************************************************************************************************************************
+
+TASK [Gathering Facts] ********************************************************************************************************************************************************************************
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *******************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+Select the task number:
+    - 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage)
+    - 2 -> fio workloads
+    - 3 -> clean-fio-tests
+    - 4 -> s3cmd-sync
+    - 5 -> s3cmd-delete
+    - 6 -> delete-fio-pods
+: 1
+ok: [localhost]
+
+TASK [rbd_ceph_performance : create environment test] *************************************************************************************************************************************************
+included: /home/ctorres-redhat.com/ocs_performance/roles/rbd_ceph_performance/tasks/deploy_test_env.yml for localhost
+
+TASK [rbd_ceph_performance : pause] *******************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+OCS cluster:
+- internal
+- external
+: internal
+ok: [localhost]
+
+TASK [rbd_ceph_performance : pause] *******************************************************************************************************************************************************************
+[rbd_ceph_performance : pause]
+How many fio pods ?
+: 24
+ok: [localhost]
+
+TASK [rbd_ceph_performance : Create the statefulset external] *****************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : Create the statefulset internal] *****************************************************************************************************************************************
+fatal: [localhost]: FAILED! => {"changed": true, "cmd": "export KUBECONFIG=$HOME/.kube/config\noc create -f roles/rbd_ceph_performance/templates/fio-block.yml\noc create -f roles/rbd_ceph_performance/templates/fio-file.yml\n", "delta": "0:00:00.543063", "end": "2020-11-12 02:23:28.411679", "msg": "non-zero return code", "rc": 1, "start": "2020-11-12 02:23:27.868616", "stderr": "Error from server (AlreadyExists): error when creating \"roles/rbd_ceph_performance/templates/fio-file.yml\": namespaces \"testing-ocs-storage\" already exists", "stderr_lines": ["Error from server (AlreadyExists): error when creating \"roles/rbd_ceph_performance/templates/fio-file.yml\": namespaces \"testing-ocs-storage\" already exists"], "stdout": "namespace/testing-ocs-storage created\nstatefulset.apps/fio-block-ceph-tools created\nstatefulset.apps/fio-file-ceph-tools created", "stdout_lines": ["namespace/testing-ocs-storage created", "statefulset.apps/fio-block-ceph-tools created", "statefulset.apps/fio-file-ceph-tools created"]}
+...ignoring
+
+TASK [rbd_ceph_performance : Scale fio-{{ ocs_interface.user_input  }}-{{ ocs_cluster.user_input  }} pods] ********************************************************************************************
+changed: [localhost]
+
+TASK [rbd_ceph_performance : fio benchmark] ***********************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : clean-fio-test] **********************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : s3cmd testing] ***********************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : s3cmd delete] ************************************************************************************************************************************************************
+skipping: [localhost]
+
+TASK [rbd_ceph_performance : fio delete environment test] *********************************************************************************************************************************************
+skipping: [localhost]
+
+PLAY RECAP ********************************************************************************************************************************************************************************************
+localhost                  : ok=8    changed=2    unreachable=0    failed=0    skipped=6    rescued=0    ignored=2
+
+```
