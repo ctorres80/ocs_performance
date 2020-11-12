@@ -1,7 +1,7 @@
 # Synthetic benchmarking tool for OpenShift Container Storage for block and file interfaces
 - [Introduction](#Introduction)
 - [Requirements](#Requirements)
-- [Environment configuration](#Environment)
+- [Environment configuration](#environment-configuration)
    - [Openshift cluster information](#Openshift)
 
 ## Introduction 
