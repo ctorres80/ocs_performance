@@ -487,8 +487,7 @@ oc -n testing-ocs-storage delete all,pvc --selector app=fio-file-ceph-tools
 ```
 2. Delete the testing namespace and pvcs
 ```bash
-oc project default
-testing-ocs-storage
+[ctorres-redhat.com@bastion ocs_performance]$ oc project default
 [ctorres-redhat.com@bastion ocs_performance]$ oc delete project testing-ocs-storage
 project.project.openshift.io "testing-ocs-storage" deleted
 ```
