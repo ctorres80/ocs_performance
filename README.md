@@ -18,14 +18,14 @@ This is in an interactive ansible role for performance testing with synthetic be
 - Ansible at least v2.8 
 
 ## Environment configuration
-#### Openshift cluster information 
+### Openshift cluster information 
 ```bash
 [ctorres-redhat.com@bastion ~]$ oc version
 Client Version: 4.5.7
 Server Version: 4.6.3
 Kubernetes Version: v1.19.0+9f84db3
 ```
-#### OpenShift nodes configuration (following labels work with AWS IPI deployment)
+### OpenShift nodes configuration (following labels work with AWS IPI deployment)
 ```bash
 [ctorres-redhat.com@bastion machinesets]$ oc get nodes -L kubernetes.io/hostname -L node.kubernetes.io/instance-type -L failure-domain.beta.kubernetes.io/region -L failure-domain.beta.kubernetes.io/zone
 NAME                                            STATUS   ROLES    AGE   VERSION           HOSTNAME          INSTANCE-TYPE   REGION         ZONE
@@ -39,7 +39,7 @@ ip-10-0-192-170.eu-central-1.compute.internal   Ready    master   12h   v1.19.0+
 ip-10-0-212-27.eu-central-1.compute.internal    Ready    worker   12h   v1.19.0+9f84db3   ip-10-0-212-27    m5.4xlarge      eu-central-1   eu-central-1c
 ip-10-0-213-116.eu-central-1.compute.internal   Ready    worker   69s   v1.19.0+9f84db3   ip-10-0-213-116   i3.16xlarge     eu-central-1   eu-central-1c
 ```
-#### OCS node configuration, we are using "i3.16xlarge" AWS instances
+### OCS node configuration, we are using "i3.16xlarge" AWS instances
 ```bash
 [ctorres-redhat.com@bastion machinesets]$ oc get nodes -l cluster.ocs.openshift.io/openshift-storage=  -o=custom-columns=NAME:.metadata.name,CPU:.status.capacity.cpu,RAM:.status.capacity.memory
 NAME                                            CPU   RAM
@@ -47,7 +47,7 @@ ip-10-0-140-220.eu-central-1.compute.internal   64    503586776Ki
 ip-10-0-183-7.eu-central-1.compute.internal     64    503586776Ki
 ip-10-0-213-116.eu-central-1.compute.internal   64    503587072Ki
 ```
-#### OCS and local-storage tested versions
+### OCS and local-storage tested versions
 ```bash
 [ctorres-redhat.com@bastion discovery]$ oc get csv -n openshift-local-storage
 NAME                                           DISPLAY         VERSION                 REPLACES   PHASE
@@ -56,7 +56,7 @@ local-storage-operator.4.5.0-202010301114.p0   Local Storage   4.5.0-20201030111
 NAME                         DISPLAY                       VERSION        REPLACES   PHASE
 ocs-operator.v4.6.0-156.ci   OpenShift Container Storage   4.6.0-156.ci              Succeeded
 ```
-#### OCS local storage available from pvs
+### OCS local storage available from pvs
 ```bash
 [ctorres-redhat.com@bastion discovery]$  oc get pv
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                        STORAGECLASS   REASON   AGE
@@ -86,7 +86,7 @@ local-pv-ecac9549                          1769Gi     RWO            Delete     
 local-pv-eff870f2                          1769Gi     RWO            Delete           Available                                localblock              12s
 pvc-59353490-6a69-4a80-a6c6-8e559a501538   1Gi        RWO            Delete           Bound       terminal/terminal-hub-data   gp2                     15h
 ```
-#### OCS osds that are consuming the previous local-storage pvs
+### OCS osds that are consuming the previous local-storage pvs
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc get pods -l app=rook-ceph-osd
 NAME                                READY   STATUS    RESTARTS   AGE
