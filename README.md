@@ -10,7 +10,7 @@
     - [OCS osds pods](#ocs-osds-pods)
     - [Label OCS nodes as infra nodes](#label-ocs-nodes-as-infra-nodes)
 - [Performance testing](#performance-testing)
-    - [Clone the repo](#1.-clone-the-repo)
+    - [Clone the repo](#clone-the-repo)
     - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
 
 ## Introduction 
@@ -135,7 +135,7 @@ node/ip-10-0-183-7.eu-central-1.compute.internal labeled
 node/ip-10-0-213-116.eu-central-1.compute.internal labeled
 ```
 ## Performance testing
-#### 1.Clone the repo
+### Clone the repo
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ pwd
 /home/ctorres-redhat.com/ocs_performance
@@ -148,7 +148,7 @@ remote: Total 394 (delta 138), reused 374 (delta 118), pack-reused 0
 Receiving objects: 100% (394/394), 56.47 KiB | 713.00 KiB/s, done.
 Resolving deltas: 100% (138/138), done.
 ```
-#### 2. Deploy the environment with the fio statefulsets
+### Deploy the environment with the fio statefulsets
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
