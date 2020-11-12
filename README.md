@@ -479,7 +479,7 @@ ocs-storagecluster-cephblockpool/csi-vol-7c021d1f-248c-11eb-afdf-0a580a82020d   
 ```
 ### Cleaning environment
 #### Delete all the benchmark resources
-Even if the playbook includes a delete option (not enabled) you need to proced from `` oc client `` to have more control when you delete resources and avoid to forget resources allocated.  
+Even if the playbook includes a delete option (not enabled) you need to use `` oc client `` to have more control when you delete resources and avoid to forget resources allocated.  
 1. Delete the the resources of both statefulsets
 ```bash
 oc -n testing-ocs-storage delete all,pvc --selector app=fio-block-ceph-tools
