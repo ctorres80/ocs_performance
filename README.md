@@ -14,6 +14,7 @@
     - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
     - [Running the fio benchmark pods](#running-the-fio-benchmark-pods)
     - [Monitoring](#monitoring)
+         - [Using Openshift Webconsole and grafana](#using-openshift-webconsole-and-grafana)
          - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
 
 ## Introduction 
@@ -453,7 +454,10 @@ ok: [localhost] => (item={'cmd': 'export KUBECONFIG=$HOME/.kube/config\noc exec 
 }
 ...
 ```
-### Monitoring
+### Monitoring performance during benchmark
+We have two option CLI from the toolbox or much better OepnShift Webconsole and Grafana
+#### Using Openshift Webconsole and grafana
+
 #### Using toolbox for cephrbd monitoring
 You can use toolbox (not available out of the box and not supported tool) to connect to your ceph cluster and run `` rbd perf image iostat `` to have a realtime rbd image monitoring (missing in the OCS dashboards)
 ```bash
