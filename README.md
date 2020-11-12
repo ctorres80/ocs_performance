@@ -153,12 +153,12 @@ Resolving deltas: 100% (138/138), done.
         - fio-block-ceph-tools -> for cephrbd pvcs consumed by fio pods
         - fio-file-ceph-tools  -> for cephfs pvcs consumed by fio pods
 ```bash
-[ctorres-redhat.com@bastion ocs_performance]$ oc get statefulsets.apps
+[ctorres-redhat.com@bastion ocs_performance]$ oc get statefulsets.apps -n testing-ocs-storage
 NAME                   READY   AGE
-fio-block-ceph-tools   24/24   178m
-fio-file-ceph-tools    24/24   178m
+fio-block-ceph-tools   24/24   3h2m
+fio-file-ceph-tools    24/24   3h2m
 ```
-
+Following an example
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
