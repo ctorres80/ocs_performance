@@ -4,7 +4,7 @@
 - [Environment configuration](#environment-configuration)
     - [Openshift cluster information](#openshift-cluster-information)
     - [OpenShift nodes configuration](#openshift-nodes-configuration)
-    - [OCS nodes i3.16xlarge AWS instances](#OCS-nodes-i3.16xlarge-AWS-instances)
+    - [OCS nodes i3.16xlarge AWS instances](#ocs-nodes-i3.16xlarge-aws-instances)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
