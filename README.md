@@ -9,6 +9,9 @@
     - [OCS local storage pvs available](#ocs-local-storage-pvs-available)
     - [OCS osds pods](#ocs-osds-pods)
     - [Label OCS nodes as infra nodes](#label-ocs-nodes-as-infra-nodes)
+- [Performance testing](#performance-testing)
+    - [Clone the repo](#clone-the-repo)
+    - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.  
@@ -134,6 +137,8 @@ node/ip-10-0-213-116.eu-central-1.compute.internal labeled
 ## Performance testing
 #### 1. Clone the repo
 ```bash
+[ctorres-redhat.com@bastion ocs_performance]$ pwd
+/home/ctorres-redhat.com/ocs_performance
 [ctorres-redhat.com@bastion ~]$ git clone https://github.com/ctorres80/ocs_performance.git
 Cloning into 'ocs_performance'...
 remote: Enumerating objects: 394, done.
@@ -143,7 +148,7 @@ remote: Total 394 (delta 138), reused 374 (delta 118), pack-reused 0
 Receiving objects: 100% (394/394), 56.47 KiB | 713.00 KiB/s, done.
 Resolving deltas: 100% (138/138), done.
 ```
-#### 2. Running the ansible role to deploy statefulsets
+#### 2. Deploy the environment with the fio statefulsets
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
