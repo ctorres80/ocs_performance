@@ -291,7 +291,7 @@ fio-file-ceph-tools-5    1/1     Running   0          2m23s
    - Select the I/O size, valid parameters(integer number): `` 4, 8, 16, 32, 64, 128, 256, 1024, 2048, 4096 ``
    - Select the I/O threads, valid parameters(integer number): `` 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 ``
    - And finally the file size of the fio benchmark, valid parameters(integer number): `` from 1 to 100 ``
-   - The fio pod replicas are consuming OCS pvcs that are mounted on /usr/share/ocs-pvc (same for file and block pods) the benchmark will run on top of the mount point
+   - The fio pod replicas are consuming OCS pvcs that are mounted on `` /usr/share/ocs-pvc `` (same for file and block pods) the benchmark will run on top of the mount point
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc rsh fio-block-ceph-tools-5
 sh-4.4$ df -h | grep rbd
