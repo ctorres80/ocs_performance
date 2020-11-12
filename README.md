@@ -13,7 +13,8 @@
     - [Clone the repo](#clone-the-repo)
     - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
     - [Running the fio benchmark pods](#running-the-fio-benchmark-pods)
-    - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
+    - [Monitoring](#monitoring)
+         - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.  
@@ -452,7 +453,8 @@ ok: [localhost] => (item={'cmd': 'export KUBECONFIG=$HOME/.kube/config\noc exec 
 }
 ...
 ```
-### Using toolbox for cephrbd monitoring
+### Monitoring
+#### Using toolbox for cephrbd monitoring
 You can use toolbox (not supported and not available out of the box) and connect to your ceph cluster and run `` rbd perf image iostat `` to have a realtime rbd image monitoring (missing in the OCS dashboards)
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc patch OCSInitialization ocsinit -n openshift-storage --type json --patch  '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]'
