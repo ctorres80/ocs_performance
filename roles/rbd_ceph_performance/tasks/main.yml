@@ -5,8 +5,6 @@
               - 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage)
               - 2 -> fio workloads
               - 3 -> clean-fio-tests
-              - 4 -> s3cmd-sync
-              - 5 -> s3cmd-delete
               - 6 -> delete-fio-pods
   register: benchmark
 
