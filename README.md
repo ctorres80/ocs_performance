@@ -1,8 +1,8 @@
 # Synthetic benchmarking tool for OpenShift Container Storage for block and file interfaces
 - [Introduction](#Introduction)
 - [Requirements](#Requirements)
-- [Environment configuration](#Environment configuration)
-  - [Openshift cluster information](#Openshift)
+- [Environment configuration](#Environment)
+   - [Openshift cluster information](#Openshift)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
@@ -18,7 +18,7 @@ This is in an interactive ansible role for performance testing with synthetic be
 - Ansible at least v2.8 
 
 ## Environment configuration
-### Openshift cluster information 
+### Openshift cluster information
 ```bash
 [ctorres-redhat.com@bastion ~]$ oc version
 Client Version: 4.5.7
