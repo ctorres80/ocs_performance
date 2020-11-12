@@ -5,6 +5,8 @@
     - [Openshift cluster information](#openshift-cluster-information)
     - [OpenShift nodes configuration](#openshift-nodes-configuration)
     - [OCS node resources](#ocs-node-resources)
+    - [OCS SW tested versions](#ocs-sw-tested-versions)
+    - [OCS local storage available from pvs](#ocs-local-storage)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.
@@ -49,7 +51,7 @@ ip-10-0-140-220.eu-central-1.compute.internal   64    503586776Ki
 ip-10-0-183-7.eu-central-1.compute.internal     64    503586776Ki
 ip-10-0-213-116.eu-central-1.compute.internal   64    503587072Ki
 ```
-### OCS and local-storage tested versions
+### OCS SW tested versions
 ```bash
 [ctorres-redhat.com@bastion discovery]$ oc get csv -n openshift-local-storage
 NAME                                           DISPLAY         VERSION                 REPLACES   PHASE
