@@ -12,7 +12,7 @@
 - [Performance testing](#performance-testing)
     - [Clone the repo](#clone-the-repo)
     - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
-    - 
+    - [Running the fio benchmark pods](#running-the-fio-benchmark-pods)
     - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
 
 ## Introduction 
@@ -283,8 +283,8 @@ fio-file-ceph-tools-3    1/1     Running   0          2m42s
 fio-file-ceph-tools-4    1/1     Running   0          2m33s
 fio-file-ceph-tools-5    1/1     Running   0          2m23s
 ```
-### Run the fio benchmark
-2. As a second step you just need to select from the list the option `` 2 -> fio workloads `` and insert the parameter for the workload that you want to test, what's is going to happen ?
+### Running the fio benchmark pods
+2. As a second step you just need to select from the list the option `` 2 -> fio workloads `` and insert the parameters for the workload that you want to test (random, sequential, small or big block sizes), what's is going to happen ?
    - The fio pod replicas are consuming OCS pvcs that are mounted on /usr/share/ocs-pvc (same for file and block pods)
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc rsh fio-block-ceph-tools-5
