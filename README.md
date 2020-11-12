@@ -12,6 +12,7 @@
 - [Performance testing](#performance-testing)
     - [Clone the repo](#clone-the-repo)
     - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
+    - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs.  
@@ -160,7 +161,7 @@ fio-file-ceph-tools    24/24   3h2m
 ```
 In the interactive menu, the ansible role will ask you what's the OCS deployment `` internal `` or `` external `` please select the right deployment accordingly.  
 For each fio pod it will wait for 10 seconds, that means if you deploy for example 12 pods it will wait for 120 seconds.   
-Following an example about how to run the option 1.  
+Following an example:    
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
