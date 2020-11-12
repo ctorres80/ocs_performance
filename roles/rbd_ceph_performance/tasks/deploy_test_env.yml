@@ -27,17 +27,16 @@
   when: ocs_cluster.user_input == "internal"
   ignore_errors: yes
 
-- name: Scale fio-{{ ocs_interface.user_input  }}-{{ ocs_cluster.user_input  }} pods
+- name: "Scale fio for OCS {{ ocs_cluster.user_input }} to {{ fio_pods.user_input }} pods in namespace {{ name_space }} "
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc -n {{ name_space }} scale statefulset fio-block-ceph-tools --replicas={{ fio_pods.user_input }}
     oc -n {{ name_space }} scale statefulset fio-file-ceph-tools --replicas={{ fio_pods.user_input }}
-  register: fio_pods
   when: fio_pods.user_input != ''
   ignore_errors: yes
 
 - debug:
-      msg: "Waiting for {{ fio_pods.user_input | int * 5 }} for pod readyness" #multiplication 5 seconds per pod
+    msg: "Waiting for {{ fio_pods.user_input | int * 5 }} seconds" #multiplication 5 seconds per pod
 
 # Pause to get some sensitive input.
 - name: Waiting for fio pods ready
@@ -48,6 +47,10 @@
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc -n {{ name_space }} get pods
-  register: fio_pods
+  register: fio_pods_print
   when: fio_pods.user_input != ''
   ignore_errors: yes
+
+- name: "fio pods avaialble for OCS testing {{ ocs_cluster.user_input }} in namespace {{ name_space }} "
+  debug:
+    msg: "{{ fio_pods_print.stdout_lines }}"
