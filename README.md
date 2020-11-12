@@ -323,7 +323,7 @@ changed: [localhost] => (item=fio-block-ceph-tools-3)
 changed: [localhost] => (item=fio-block-ceph-tools-4)
 changed: [localhost] => (item=fio-block-ceph-tools-5)
 ```
-Following an example of 4K workload, 10GB size, on 6 parallel `` fio pods ``:   
+Following a full example for 4K block size, randomwritw workload, 10GB size, on 6 parallel `` fio pods ``:   
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ ansible-playbook use_playbook.yml
 [WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
