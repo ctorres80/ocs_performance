@@ -137,8 +137,6 @@ node/ip-10-0-213-116.eu-central-1.compute.internal labeled
 ## Performance testing
 ### Clone the repo
 ```bash
-[ctorres-redhat.com@bastion ocs_performance]$ pwd
-/home/ctorres-redhat.com/ocs_performance
 [ctorres-redhat.com@bastion ~]$ git clone https://github.com/ctorres80/ocs_performance.git
 Cloning into 'ocs_performance'...
 remote: Enumerating objects: 394, done.
