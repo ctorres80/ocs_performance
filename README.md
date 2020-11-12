@@ -13,7 +13,7 @@
     - [Clone the repo](#clone-the-repo)
     - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
     - [Running the fio benchmark pods](#running-the-fio-benchmark-pods)
-    - [Monitoring](#monitoring)
+    - [Monitoring performance during benchmark](#monitoring-performance-during-benchmark)
          - [Using Openshift Webconsole and grafana](#using-openshift-webconsole-and-grafana)
          - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
 
