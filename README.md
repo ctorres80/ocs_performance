@@ -26,7 +26,13 @@ If you already deployed an OCS cluster you can move to [Performance testing](#pe
 ## Requirements
 - OpenShift Container Platform v4.2+ 
 - OpenShift Container Storage v4.2+ (AKA OCS)
-- Local Storage Operator
+- OpenShift authentication through kubeconfig file, modifify the following variable accordingly:
+```bash
+roles/rbd_ceph_performance/defaults/main.yml
+# kubeconfig path
+kubeconfig: '$HOME/.kube/config'
+```
+
 - Supported infrastructures: AWS IPI, VMware UPI (Other platforms have not been tested yet but the tool should work)
 - OpenShift management node with admin serviceaccount
 - `oc` client with kubeconfig file authentication
