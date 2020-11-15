@@ -20,7 +20,7 @@
     for i in {1..{{ db_instances.user_input }}}
     do
         oc new-app --name=postgresql-ocs-$i --template=postgresql-persistent-ocs -n my-testing-pgbench-ocs-$i
-done
+    done
   register: pgbench_instances
   when: db_instances.user_input > 0 and scaling_option.user_input > 0
 
