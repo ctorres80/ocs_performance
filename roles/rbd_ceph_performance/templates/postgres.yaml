@@ -106,7 +106,7 @@ objects:
     storageClassName: "ocs-storagecluster-ceph-rbd"
     resources:
       requests:
-        storage: ${VOLUME_CAPACITY}
+        storage: 100Gi
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -228,11 +228,11 @@ parameters:
   name: POSTGRESQL_DATABASE
   required: true
   value: sampledb
-- description: Volume space available for data, e.g. 512Mi, 2Gi.
-  displayName: Volume Capacity
-  name: VOLUME_CAPACITY
-  required: true
-  value: 1Gi
+#- description: Volume space available for data, e.g. 512Mi, 2Gi.
+# displayName: Volume Capacity
+#  name: VOLUME_CAPACITY
+#  required: true
+#  value: 1Gi
 - description: Version of PostgreSQL image to be used (10-el7, 10-el8, or latest).
   displayName: Version of PostgreSQL Image
   name: POSTGRESQL_VERSION

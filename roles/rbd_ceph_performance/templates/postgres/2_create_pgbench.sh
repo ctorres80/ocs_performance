@@ -6,6 +6,7 @@ do
  	password=$(oc get secrets postgresql -n my-testing-pgbench-ocs-$i -o jsonpath='{.data.database-password}{"\n"}' | base64 -d)
 	service=$(oc get service -n my-testing-pgbench-ocs-$i -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
     postgres_pod=$(oc get pods -n my-testing-pgbench-ocs-$i -o  jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
+done
 #	echo "oc -n my-testing-pgbench-ocs-$i exec $postgres_pod -it -- pgbench -U $user -h $service -i -s 500 sampledb # $password"
 #	echo "oc -n my-testing-pgbench-ocs-$i rsh $postgres_pod"
 #	echo "export PGPASSWORD=$password"
