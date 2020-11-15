@@ -1,0 +1,56 @@
+- pause:
+    prompt: |
+          How many pg DBs to deploy?:
+          - 4, 8, 16?
+  register: db_instances
+- pause:
+    prompt: |
+          What's the scaling option? The amount of capacity will be "scaling_option x 16MB" 
+          - 50, 100, 500, 1000?
+  register: scaling_option
+
+- name: Create the statefulset external
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc create -f roles/rbd_ceph_performance/templates/fio-block-external.yml
+    oc create -f roles/rbd_ceph_performance/templates/fio-file-external.yml
+  register: fio_create_block_statefulset
+  when: ocs_cluster.user_input == "external"
+  ignore_errors: yes
+
+- name: Create the statefulset internal
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc create -f roles/rbd_ceph_performance/templates/fio-block.yml
+    oc create -f roles/rbd_ceph_performance/templates/fio-file.yml
+  register: fio_create_block_statefulset
+  when: ocs_cluster.user_input == "internal"
+  ignore_errors: yes
+
+- name: "Scale fio for OCS {{ ocs_cluster.user_input }} to {{ fio_pods.user_input }} pods in namespace {{ name_space }} "
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} scale statefulset fio-block-ceph-tools --replicas={{ fio_pods.user_input }}
+    oc -n {{ name_space }} scale statefulset fio-file-ceph-tools --replicas={{ fio_pods.user_input }}
+  when: fio_pods.user_input != ''
+  ignore_errors: yes
+
+- debug:
+    msg: "Waiting for {{ fio_pods.user_input | int * 10 }} seconds" #multiplication 5 seconds per pod
+
+# Pause to get some sensitive input.
+- name: Waiting for fio pods ready
+  pause:
+    seconds: "{{ fio_pods.user_input | int * 10 }}"
+
+- name: Print fio available pods
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} get pods
+  register: fio_pods_print
+  when: fio_pods.user_input != ''
+  ignore_errors: yes
+
+- name: "fio pods available for OCS testing {{ ocs_cluster.user_input }} in namespace {{ name_space }} "
+  debug:
+    msg: "{{ fio_pods_print.stdout_lines }}"

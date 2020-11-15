@@ -1,8 +1,8 @@
 #!/bin/bash
 for i in {1..9}
 do
-	oc create namespace my-postgres-$i
-	oc label namespace my-postgres-$i "openshift.io/cluster-monitoring=true"
+	oc create namespace my-ocs-postgres-$i
+	oc label namespace my-ocs-postgres-$i "openshift.io/cluster-monitoring=true"
 done
 #oc new-app --name=postgresql-block-4 --template=postgresql-persistent-ocs
 for i in {1..9}

@@ -6,6 +6,7 @@
               - 2 -> fio workloads
               - 3 -> clean-fio-tests
               - 6 -> delete-fio-pods
+              - 7 -> pgbench testing
   register: benchmark
 
 - name: create environment test
@@ -31,3 +32,7 @@
 - name: fio delete environment test
   include_tasks: fio-delete.yml
   when: benchmark.user_input == "6"
+
+- name: pgbench testing
+  include_tasks: pgbench.yml
+  when: benchmark.user_input == "7"
