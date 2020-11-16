@@ -10,9 +10,10 @@
   register: scaling_option
 
 # Create the namespaces and pgbench instances
-- name: Create the postgres namespace and DB instance
+- name: Create the postgres template, namespace and DB instance
   shell: |
     export KUBECONFIG={{ kubeconfig }}
+    oc apply -f roles/rbd_ceph_performance/templates/postgres/pgbench-template.yml
     for i in {1..{{ db_instances.user_input | int }}}
     do
       oc create namespace {{ pgbench_project }}$i
@@ -41,6 +42,7 @@
 # oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- chmod 0600 /var/lib/pgsql/.pgpass
 - name: Running pgbench inizialization
   shell: |
+    export KUBECONFIG={{ kubeconfig }}
     user=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
     service=$(oc -n {{ pgbench_project }}{{ item }} get service -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
     postgres_pod=$(oc -n {{ pgbench_project }}{{ item }} get pods -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
@@ -52,7 +54,7 @@
   when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
   ignore_errors: yes
 
-- name: Waiting for pgbench inizialization
+- name: Waiting for pgbench inizialization pgbench -i -s {{ scaling_option.user_input }} sampledb
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
@@ -65,10 +67,11 @@
 
 - name: Running pgbench baseline
   shell: |
+    export KUBECONFIG={{ kubeconfig }}
     user=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
     service=$(oc -n {{ pgbench_project }}{{ item }} get service -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
     postgres_pod=$(oc -n {{ pgbench_project }}{{ item }} get pods -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
-    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service -c 32 -j 8 -P 180 -T 180 sampledb
+    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service {{ pgbench_options }}
   with_sequence: start=1 end={{ db_instances.user_input | int }}
   register: _create_instances
   async: 3600  # Maximum runtime in seconds. Adjust as needed.
@@ -77,7 +80,7 @@
   ignore_errors: yes
 #    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service -c 8 -j 8 -t 10000 sampledb
 
-- name: Waiting for pgbench baseline
+- name: Waiting for pgbench baseline pgbench {{ pgbench_options }}
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
@@ -96,8 +99,10 @@
 # Delete the namespaces and pgbench instances
 - name: Delete the postgres namespaces and DB instances
   shell: |
+    export KUBECONFIG={{ kubeconfig }}
     for i in {1..{{ db_instances.user_input | int }}}
     do
       oc delete all,pvc --all -n {{ pgbench_project }}$i
       oc delete project {{ pgbench_project }}$i
     done
+    oc delete -f roles/rbd_ceph_performance/templates/postgres/pgbench-template.yml

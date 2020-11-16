@@ -5,3 +5,7 @@ pvc_yml: './roles/rbd_ceph_performance/templates/pvc.yml'
 kubeconfig: '$HOME/.kube/config'
 # ocs namespace
 name_space: 'testing-ocs-storage'
+# postgres namespace base
+pgbench_project: 'my-testing-pgbench-ocs-'
+# pgbench options it will run 32 clients, 8 threads for 300 secs
+pgbench_options: ' -c 32 -j 8 -P 30 -T 300 sampledb'
