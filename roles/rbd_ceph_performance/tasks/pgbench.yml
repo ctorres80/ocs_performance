@@ -5,29 +5,76 @@
   register: db_instances
 - pause:
     prompt: |
-          What's the scaling option? The amount of capacity will be "scaling_option x 16MB" 
+          What's the scaling option? The amount of capacity will be "scaling_option x 16MB"
           - 50, 100, 500, 1000, 5000?
   register: scaling_option
 
+# Create the namespaces and pgbench instances
 - name: Create the postgres namespace and DB instance
   shell: |
     export KUBECONFIG={{ kubeconfig }}
-    for i in {1..{{ db_instances.user_input }}}
+    for i in {1..{{ db_instances.user_input | int }}}
     do
-      oc create namespace my-testing-pgbench-ocs-$i
-      oc label namespace my-testing-pgbench-ocs-$i "openshift.io/cluster-monitoring=true"
+      oc create namespace {{ pgbench_project }}$i
+      oc label namespace {{ pgbench_project }}$i "openshift.io/cluster-monitoring=true"
     done
-    for i in {1..{{ db_instances.user_input }}}
+    for i in {1..{{ db_instances.user_input | int }}}
     do
-        oc new-app --name=postgresql-ocs-$i --template=postgresql-persistent-ocs -n my-testing-pgbench-ocs-$i
+      oc new-app --name=postgresql-ocs-$i --template=postgresql-persistent-ocs -n {{ pgbench_project }}$i
     done
   register: pgbench_instances
-  when: db_instances.user_input > 0 and scaling_option.user_input > 0
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+  ignore_errors: yes
 
 - debug:
-    msg: "Waiting for {{ db_instances.user_input | int * 12 }} seconds"
-    
+    msg: "Waiting for {{ db_instances.user_input | int * 15 }} seconds"
+
 # Pause before starting benchmarking
 - name: Waiting for pgbench_instances pods ready
   pause:
-    seconds: "{{ db_instances.user_input | int * 12 }}"
+    seconds: "{{ db_instances.user_input | int * 15 }}"
+
+# Running pgbench workload
+- name: Running pgbench workload
+  shell: |
+    user=$(oc get secrets postgresql -n {{ pgbench_project }}{{ item }} -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
+    password=$(oc get secrets postgresql -n {{ pgbench_project }}{{ item }} -o jsonpath='{.data.database-password}{"\n"}' | base64 -d)
+    service=$(oc get service -n {{ pgbench_project }}{{ item }} -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
+    postgres_pod=$(oc get pods -n {{ pgbench_project }}{{ item }} -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
+    echo "$service:5432:sampledb:$user:$password" > .pgpass
+    oc label namespace {{ pgbench_project }}{{ item }} "openshift.io/cluster-monitoring=true"
+    oc -n {{ pgbench_project }}{{ item }} rsync . $postgres_pod:/var/lib/pgsql/ --exclude=* --include=.pgpass --no-perms=true
+    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- chmod 0600 /var/lib/pgsql/.pgpass
+    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -it -- pgbench -U $user -h $service -i -s {{ scaling_option.user_input }} sampledb
+  with_sequence: start=1 end={{ db_instances.user_input | int }}
+  register: _create_instances
+  async: 3600  # Maximum runtime in seconds. Adjust as needed.
+  poll: 0  # Fire and continue (never poll)
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+  ignore_errors: yes
+
+- name: Waiting for pgbench workloads
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: _jobs
+  until: _jobs.finished
+  delay: 10  # Check every 5 seconds. Adjust as you like.
+  retries: 360  # Retry up to 10 times. Adjust as needed.
+  loop: "{{ _create_instances.results }}"
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+  ignore_errors: yes
+
+- name: Print benchmarks stats
+  debug:
+    msg: "{{ item.stdout_lines }}"
+  loop: "{{ _jobs.results.split(',') }}"
+  ignore_errors: yes
+
+# Delete the namespaces and pgbench instances
+- name: Delete the postgres namespaces and DB instances
+  shell: |
+    for i in {1..{{ db_instances.user_input | int }}}
+    do
+      oc delete all,pvc --all -n {{ pgbench_project }}$i
+      oc delete project {{ pgbench_project }}$i
+    done
