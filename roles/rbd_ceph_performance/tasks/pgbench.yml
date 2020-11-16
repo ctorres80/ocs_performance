@@ -37,15 +37,14 @@
 # Running pgbench workload
 - name: Running pgbench workload
   shell: |
-    user=$(oc get secrets postgresql -n {{ pgbench_project }}{{ item }} -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
-    password=$(oc get secrets postgresql -n {{ pgbench_project }}{{ item }} -o jsonpath='{.data.database-password}{"\n"}' | base64 -d)
-    service=$(oc get service -n {{ pgbench_project }}{{ item }} -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
-    postgres_pod=$(oc get pods -n {{ pgbench_project }}{{ item }} -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
-    echo "$service:5432:sampledb:$user:$password" > .pgpass
-    oc label namespace {{ pgbench_project }}{{ item }} "openshift.io/cluster-monitoring=true"
-    oc -n {{ pgbench_project }}{{ item }} rsync . $postgres_pod:/var/lib/pgsql/ --exclude=* --include=.pgpass --no-perms=true
-    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- chmod 0600 /var/lib/pgsql/.pgpass
-    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -it -- pgbench -U $user -h $service -i -s {{ scaling_option.user_input }} sampledb
+    user=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
+    service=$(oc -n {{ pgbench_project }}{{ item }} get service -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
+    postgres_pod=$(oc -n {{ pgbench_project }}{{ item }} get pods -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
+    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service -i -s {{ scaling_option.user_input }} sampledb
+    #  password=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-password}{"\n"}' | base64 -d)
+    #echo "$service:5432:sampledb:$user:$password" > .pgpass
+    #oc -n {{ pgbench_project }}{{ item }} rsync . $postgres_pod:/var/lib/pgsql/ --exclude=* --include=.pgpass --no-perms=true
+    #oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- chmod 0600 /var/lib/pgsql/.pgpass
   with_sequence: start=1 end={{ db_instances.user_input | int }}
   register: _create_instances
   async: 3600  # Maximum runtime in seconds. Adjust as needed.
@@ -67,7 +66,7 @@
 - name: Print benchmarks stats
   debug:
     msg: "{{ item.stdout_lines }}"
-  loop: "{{ _jobs.results.split(',') }}"
+  loop: "{{ _jobs.results }}"
   ignore_errors: yes
 
 # Delete the namespaces and pgbench instances
@@ -78,3 +77,4 @@
       oc delete all,pvc --all -n {{ pgbench_project }}$i
       oc delete project {{ pgbench_project }}$i
     done
+    
