@@ -35,16 +35,16 @@
     seconds: "{{ db_instances.user_input | int * 15 }}"
 
 # Running pgbench workload
-- name: Running pgbench workload
+# password=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-password}{"\n"}' | base64 -d)
+# echo "$service:5432:sampledb:$user:$password" > .pgpass
+# oc -n {{ pgbench_project }}{{ item }} rsync . $postgres_pod:/var/lib/pgsql/ --exclude=* --include=.pgpass --no-perms=true
+# oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- chmod 0600 /var/lib/pgsql/.pgpass
+- name: Running pgbench inizialization
   shell: |
     user=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
     service=$(oc -n {{ pgbench_project }}{{ item }} get service -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
     postgres_pod=$(oc -n {{ pgbench_project }}{{ item }} get pods -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
     oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service -i -s {{ scaling_option.user_input }} sampledb
-    #  password=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-password}{"\n"}' | base64 -d)
-    #echo "$service:5432:sampledb:$user:$password" > .pgpass
-    #oc -n {{ pgbench_project }}{{ item }} rsync . $postgres_pod:/var/lib/pgsql/ --exclude=* --include=.pgpass --no-perms=true
-    #oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- chmod 0600 /var/lib/pgsql/.pgpass
   with_sequence: start=1 end={{ db_instances.user_input | int }}
   register: _create_instances
   async: 3600  # Maximum runtime in seconds. Adjust as needed.
@@ -52,7 +52,7 @@
   when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
   ignore_errors: yes
 
-- name: Waiting for pgbench workloads
+- name: Waiting for pgbench inizialization
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
@@ -63,9 +63,33 @@
   when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
   ignore_errors: yes
 
+- name: Running pgbench baseline
+  shell: |
+    user=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
+    service=$(oc -n {{ pgbench_project }}{{ item }} get service -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
+    postgres_pod=$(oc -n {{ pgbench_project }}{{ item }} get pods -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
+    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service -c 32 -j 8 -P 180 -T 180 sampledb
+  with_sequence: start=1 end={{ db_instances.user_input | int }}
+  register: _create_instances
+  async: 3600  # Maximum runtime in seconds. Adjust as needed.
+  poll: 0  # Fire and continue (never poll)
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+  ignore_errors: yes
+#    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service -c 8 -j 8 -t 10000 sampledb
+
+- name: Waiting for pgbench baseline
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: _jobs
+  until: _jobs.finished
+  delay: 10  # Check every 5 seconds. Adjust as you like.
+  retries: 360  # Retry up to 10 times. Adjust as needed.
+  loop: "{{ _create_instances.results }}"
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+
 - name: Print benchmarks stats
   debug:
-          msg: "{{ item.stdout_lines }}"
+    msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"
   ignore_errors: yes
 
@@ -77,4 +101,3 @@
       oc delete all,pvc --all -n {{ pgbench_project }}$i
       oc delete project {{ pgbench_project }}$i
     done
-    
