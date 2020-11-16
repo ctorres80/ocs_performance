@@ -65,7 +65,7 @@
 
 - name: Print benchmarks stats
   debug:
-    msg: "{{ item.stdout_lines }}"
+          msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"
   ignore_errors: yes
 
