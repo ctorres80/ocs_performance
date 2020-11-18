@@ -125,6 +125,15 @@ objects:
         labels:
           name: ${DATABASE_SERVICE_NAME}
       spec:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: cluster.ocs.openshift.io/openshift-storage
+                  operator: NotIn
+                  values:
+                  - ""
         containers:
         - capabilities: {}
           env:
