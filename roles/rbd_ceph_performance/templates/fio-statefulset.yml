@@ -11,8 +11,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   labels:
-    app: fio-file-ceph-tools
-  name: fio-file-ceph-tools
+    app: fio-testing-performance
+  name: fio-testing-performance
   namespace: testing-ocs-storage
 spec:
   progressDeadlineSeconds: 600
@@ -20,7 +20,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: fio-file-ceph-tools
+      app: fio-testing-performance
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -30,10 +30,10 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: fio-file-ceph-tools
+        app: fio-testing-performance
     spec:
       containers:
-      - name: fio-file-ceph-tools
+      - name: fio-testing-performance
         image: quay.io/cloud-bulldozer/fio:latest
         command:
           - sleep

@@ -1,49 +1,80 @@
-- pause:
+- name: Select storage class
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | egrep "{{ rbd_provisioner }}|{{ cephfs_provisioner  }}" | awk  '{print $1}'
+  register: ocs_storage_classes
+
+- name: Available storage classess
+  debug:
+        msg:
+          - "Select the storage class: "
+          - "{{ ocs_storage_classes.stdout_lines }}"
+
+- name: "Select the storage class"
+  pause:
     prompt: |
-          OCS cluster:
-          - internal
-          - external
-  register: ocs_cluster
+          Select the storage class:
+  register: storage_class
+
+- name: Looking for storage provisioner
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | grep "{{ storage_class.user_input }}" | awk  '{print $2}'
+  register: ocs_storage_provisioner
+
+- name: 'Modify statefulset for block accordingly provisioner'
+  lineinfile:
+    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
+    regexp: '^        - ReadWrite'
+    line: '        - ReadWriteOnce'
+  when: ocs_storage_provisioner.stdout == "openshift-storage.rbd.csi.ceph.com"
+
+- name: 'Modify statefulset for file accordingly provisioner'
+  lineinfile:
+    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
+    regexp: '^        - ReadWrite'
+    line: '        - ReadWriteMany'
+  when: ocs_storage_provisioner.stdout == "openshift-storage.cephfs.csi.ceph.com"
+
+- name: 'Modify statefulset with the storageclass accordingly'
+  lineinfile:
+    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
+    regexp: '^      storageClassName: '
+    line: '      storageClassName: {{ storage_class.user_input }}'
+
 - pause:
     prompt: |
           How many fio pods ?
   register: fio_pods
 
-- name: Create the statefulset external
+- name: Create the fio statefulset
   shell: |
     export KUBECONFIG={{ kubeconfig }}
-    oc create -f roles/rbd_ceph_performance/templates/fio-block-external.yml
-    oc create -f roles/rbd_ceph_performance/templates/fio-file-external.yml
-  register: fio_create_block_statefulset
-  when: ocs_cluster.user_input == "external"
+    oc create -f roles/rbd_ceph_performance/templates/fio-statefulset.yml
   ignore_errors: yes
 
-- name: Create the statefulset internal
+- name: Scale fio for OCS to {{ fio_pods.user_input }} pods in namespace {{ name_space }}
   shell: |
     export KUBECONFIG={{ kubeconfig }}
-    oc create -f roles/rbd_ceph_performance/templates/fio-block.yml
-    oc create -f roles/rbd_ceph_performance/templates/fio-file.yml
-  register: fio_create_block_statefulset
-  when: ocs_cluster.user_input == "internal"
-  ignore_errors: yes
-
-- name: "Scale fio for OCS {{ ocs_cluster.user_input }} to {{ fio_pods.user_input }} pods in namespace {{ name_space }} "
-  shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc -n {{ name_space }} scale statefulset fio-block-ceph-tools --replicas={{ fio_pods.user_input }}
-    oc -n {{ name_space }} scale statefulset fio-file-ceph-tools --replicas={{ fio_pods.user_input }}
+    oc -n {{ name_space }} scale statefulset fio-testing-performance --replicas={{ fio_pods.user_input }}
   when: fio_pods.user_input != ''
   ignore_errors: yes
 
-- debug:
-    msg: "Waiting for {{ fio_pods.user_input | int * 10 }} seconds" #multiplication 5 seconds per pod
-
 # Pause to get some sensitive input.
-- name: Waiting for fio pods ready
-  pause:
-    seconds: "{{ fio_pods.user_input | int * 10 }}"
+#- name: Waiting for fio pods ready
+#  pause:
+#    seconds: "{{ fio_pods.user_input | int * 15 }}"
 
-- name: Print fio available pods
+- name: Waiting for the availability of fio replicas={{ fio_pods.user_input }}
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} get statefulsets fio-testing-performance -o yaml -o jsonpath='{.items[*]}{@.status.readyReplicas}{"\n"}'
+  register: fio_pods_ready
+  until: fio_pods_ready.stdout | int == fio_pods.user_input | int
+  retries: 60
+  delay: 10
+
+- name: Printing fio available pods
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc -n {{ name_space }} get pods
@@ -51,6 +82,12 @@
   when: fio_pods.user_input != ''
   ignore_errors: yes
 
-- name: "fio pods available for OCS testing {{ ocs_cluster.user_input }} in namespace {{ name_space }} "
+- name: fio pods available for OCS testing with storage class {{ storage_class.user_input }}
   debug:
     msg: "{{ fio_pods_print.stdout_lines }}"
+
+- name: Test completed, deleting the fio environment test
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc delete -f roles/rbd_ceph_performance/templates/fio-statefulset.yml
+  ignore_errors: yes
