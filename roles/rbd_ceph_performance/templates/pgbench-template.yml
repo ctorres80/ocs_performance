@@ -202,12 +202,12 @@ parameters:
   displayName: Memory Limit
   name: MEMORY_LIMIT
   required: true
-  value: 4Gi
+  value: 8Gi
 - description: Maximum amount of cpu the container can use.
   displayName: CPU Limit
   name: CPU_LIMIT
   required: true
-  value: "2"
+  value: "4"
 - description: The OpenShift Namespace where the ImageStream resides.
   displayName: Namespace
   name: NAMESPACE
