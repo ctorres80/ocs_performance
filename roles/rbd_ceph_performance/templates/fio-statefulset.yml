@@ -32,6 +32,15 @@ spec:
       labels:
         app: fio-testing-performance
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: cluster.ocs.openshift.io/testing-ocs-storage
+                operator: NotIn
+                values:
+                - ""
       containers:
       - name: fio-testing-performance
         image: quay.io/cloud-bulldozer/fio:latest
