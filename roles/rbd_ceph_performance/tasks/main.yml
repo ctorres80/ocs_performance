@@ -2,37 +2,23 @@
 - pause:
     prompt: |
           Select the task number:
-              - 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage)
-              - 2 -> fio workloads
-              - 3 -> clean-fio-tests
-              - 6 -> delete-fio-pods
-              - 7 -> pgbench testing
+              - 1 -> Deploy fio statefulset, replicas in project=testing-ocs-storage, testing and cleaning the environment
+              - 2 -> Running postgres pgbench from Template, testing and cleaning the environment
   register: benchmark
 
-- name: create environment test
+- name: Fio testing
   include_tasks: deploy_test_env.yml
   when: benchmark.user_input == "1"
 
-- name: fio benchmark
-  include_tasks: fio-tests.yml
+- name: Postgres pgbench testing
+  include_tasks: pgbench.yml
   when: benchmark.user_input == "2"
 
-- name: clean-fio-test
-  include_tasks: clean-fio-test.yml
-  when: benchmark.user_input == "3"
 
-- name: s3cmd testing
-  include_tasks: s3cmd.yml
-  when: benchmark.user_input == "4"
+#- name: s3cmd testing
+#  include_tasks: s3cmd.yml
+#  when: benchmark.user_input == "4"
 
-- name: s3cmd delete
-  include_tasks: s3cmd-delete.yml
-  when: benchmark.user_input == "5"
-
-- name: fio delete environment test
-  include_tasks: fio-delete.yml
-  when: benchmark.user_input == "6"
-
-- name: pgbench testing
-  include_tasks: pgbench.yml
-  when: benchmark.user_input == "7"
+#- name: s3cmd delete
+#  include_tasks: s3cmd-delete.yml
+#  when: benchmark.user_input == "5"
