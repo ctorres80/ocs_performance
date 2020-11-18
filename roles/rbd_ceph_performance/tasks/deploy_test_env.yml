@@ -136,7 +136,7 @@
   poll: 0  # Fire and continue (never poll)
   when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
-- name: Waiting for fio fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --rwmixread={{ rwmixread.user_input }} --rwmixwrite={{ rwmixwrite.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1 mixed rw jobs with storage class {{ storage_class.user_input }}
+- name: Testing storage class {{ storage_class.user_input }}: fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --rwmixread={{ rwmixread.user_input }} --rwmixwrite={{ rwmixwrite.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1 mixed rw jobs with storage class {{ storage_class.user_input }}
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
@@ -162,7 +162,7 @@
   poll: 0  # Fire and continue (never poll)
   when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
-- name: Waiting for fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1
+- name: Testing storage class {{ storage_class.user_input }}: fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
