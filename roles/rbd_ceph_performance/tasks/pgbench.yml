@@ -9,6 +9,29 @@
           - 50, 100, 500, 1000, 5000?
   register: scaling_option
 
+- name: Select storage class
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | egrep "{{ rbd_provisioner }}|{{ cephfs_provisioner  }}" | awk  '{print $1}'
+  register: ocs_storage_classes
+
+- name: Available storage classess
+  debug:
+        msg:
+          - "Select the storage class: "
+          - "{{ ocs_storage_classes.stdout_lines }}"
+
+- pause:
+    prompt: |
+          Select the storage class:
+  register: storage_class
+
+- name: 'Modify statefulset with the storageclass accordingly'
+  lineinfile:
+    path: roles/rbd_ceph_performance/templates/pgbench-template.yml
+    regexp: '^    storageClassName: '
+    line: '    storageClassName: {{ storage_class.user_input }}'
+
 # Create the namespaces and pgbench instances
 - name: Create the postgres template, namespace and DB instance
   shell: |
