@@ -37,7 +37,7 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: cluster.ocs.openshift.io/testing-ocs-storage
+              - key: cluster.ocs.openshift.io/openshift-storage
                 operator: NotIn
                 values:
                 - ""
