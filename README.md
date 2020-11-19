@@ -283,10 +283,10 @@ ok: [localhost] => (item={'cmd': 'export KUBECONFIG=$HOME/.kube/config\noc exec 
 We have two options for real time monitoring:  
 - OpenShift Webconsole and Grafana (preferred) 
 - CLI from the toolbox   
-![alt text](https://github.com/ctorres80/ocs_performance/blob/v1.0.1/roles/rbd_ceph_performance/files/performance_cli.png)  
 #### Using Openshift Webconsole and grafana
 ![alt text](https://github.com/ctorres80/ocs_performance/blob/v1.0.1/roles/rbd_ceph_performance/files/performance_screenshot.png?raw=true)
 #### Using toolbox for cephrbd monitoring
+![alt text](https://github.com/ctorres80/ocs_performance/blob/v1.0.1/roles/rbd_ceph_performance/files/performance_cli.png)  
 You can use toolbox (not available out of the box and not supported tool) to connect to your ceph cluster and run `` rbd perf image iostat `` to have a realtime rbd image monitoring (missing in the OCS dashboards)
 ```bash
 [ctorres-redhat.com@bastion ocs_performance]$ oc patch OCSInitialization ocsinit -n openshift-storage --type json --patch  '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]'
