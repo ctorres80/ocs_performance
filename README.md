@@ -9,7 +9,7 @@
     - [Label OCS nodes as infra nodes](#label-ocs-nodes-as-infra-nodes)
 - [Performance testing](#performance-testing)
     - [Clone the repo](#clone-the-repo)
-    - [Deploy the environment with the fio statefulsets](#deploy-the-environment-with-the-fio-statefulsets)
+    - [Fio testing](#fio-testing)
     - [Running the fio benchmark pods](#running-the-fio-benchmark-pods)
     - [Monitoring performance during benchmark](#monitoring-performance-during-benchmark)
          - [Using Openshift Webconsole and grafana](#using-openshift-webconsole-and-grafana)
@@ -90,8 +90,11 @@ node/ip-10-0-213-116.eu-central-1.compute.internal labeled
 ```bash
 [ctorres-redhat.com@bastion ~]$ git clone --branch v1.0.1 https://github.com/ctorres80/ocs_performance.git
 ```
-### Deploy the environment with the fio statefulsets
-1. The ansible role is interactive, you will see a list of options where you need to start with option `` 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage) `` for the environment deployment.  
+### Fio testing
+1. The ansible role is interactive, the fio testing is available 
+```bash
+ 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage) `` for the environment deployment.  
+ ```
    - It will create a namespace `` testing-ocs-storage ``
    - Deploy two statefulsets in the namespace `` testing-ocs-storage ``:
         - fio-block-ceph-tools -> for cephrbd pvcs consumed by fio pods
