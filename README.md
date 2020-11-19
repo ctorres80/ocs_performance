@@ -283,6 +283,7 @@ ok: [localhost] => (item={'cmd': 'export KUBECONFIG=$HOME/.kube/config\noc exec 
 We have two options for real time monitoring:  
 - OpenShift Webconsole and Grafana (preferred) 
 - CLI from the toolbox   
+![alt text](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/performance_cli.png?raw=true)  
 #### Using Openshift Webconsole and grafana
 ![alt text](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/performance_screenshot.png?raw=true)
 #### Using toolbox for cephrbd monitoring
