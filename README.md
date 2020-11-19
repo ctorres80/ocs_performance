@@ -303,15 +303,7 @@ ocs-storagecluster-cephblockpool/csi-vol-7c021d1f-248c-11eb-afdf-0a580a82020d   
 ```
 ### Cleaning environment
 #### Delete all
-Even if the playbook includes a delete option (not enabled) you need to use `` oc client `` to have more control when you delete resources and avoid to forget resources allocated.  
-1. Delete the the resources of both statefulsets
+When the testing will be completed the ansible role includes a task for cleaning all the resources that have been created for the purpose of the test included: namespace, pvc, pv, statefulset 
 ```bash
-oc -n testing-ocs-storage delete all,pvc --selector app=fio-block-ceph-tools
-oc -n testing-ocs-storage delete all,pvc --selector app=fio-file-ceph-tools
-```
-2. Delete the testing namespace and pvcs
-```bash
-[ctorres-redhat.com@bastion ocs_performance]$ oc project default
-[ctorres-redhat.com@bastion ocs_performance]$ oc delete project testing-ocs-storage
-project.project.openshift.io "testing-ocs-storage" deleted
+
 ```
