@@ -153,7 +153,7 @@ TASK [rbd_ceph_performance : Waiting for the availability of fio replicas=8] ***
 Thursday 19 November 2020  01:22:19 +0000 (0:00:00.418)       0:04:54.462 *****
 FAILED - RETRYING: Waiting for the availability of fio replicas=8 (60 retries left).
 ```
-Be careful with the ansible output, it will show the fio pod `` Ready `` for testing
+Be careful with the ansible output, it will show the fio pods `` Running `` and ready for testing  
 ```bash
 TASK [rbd_ceph_performance : fio pods available for OCS testing with storage class sc-cephrbd-replica2] **********************************************************************************
 Thursday 19 November 2020  01:23:54 +0000 (0:00:00.419)       0:06:29.268 *****
@@ -178,7 +178,7 @@ ok: [localhost] =>
    - And finally the file size of the fio benchmark, valid parameters(integer number): `` from 1 to 100 ``
    - The fio pod replicas are consuming OCS pvcs that are mounted on `` /usr/share/ocs-pvc `` (same for file and block pods) the benchmark will run on top of the mount point
 ```bash
-[ctorres-redhat.com@bastion ocs_performance]$ oc rsh fio-block-ceph-tools-5
+[ctorres-redhat.com@bastion ocs_performance]$ oc rsh fio-testing-performance-0
 sh-4.4$ df -h | grep rbd
 /dev/rbd1                              98G   11G   88G  11% /usr/share/ocs-pvc
 ```
