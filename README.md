@@ -88,14 +88,7 @@ node/ip-10-0-213-116.eu-central-1.compute.internal labeled
 ## Performance testing
 ### Clone the repo
 ```bash
-[ctorres-redhat.com@bastion ~]$ git clone https://github.com/ctorres80/ocs_performance.git
-Cloning into 'ocs_performance'...
-remote: Enumerating objects: 162, done.
-remote: Counting objects: 100% (162/162), done.
-remote: Compressing objects: 100% (110/110), done.
-remote: Total 616 (delta 56), reused 150 (delta 48), pack-reused 454
-Receiving objects: 100% (616/616), 641.07 KiB | 1.95 MiB/s, done.
-Resolving deltas: 100% (220/220), done.
+[ctorres-redhat.com@bastion ~]$ git clone --branch v1.0.1 https://github.com/ctorres80/ocs_performance.git
 ```
 ### Deploy the environment with the fio statefulsets
 1. The ansible role is interactive, you will see a list of options where you need to start with option `` 1 -> deploy fio file and block statefulset and pods (project=testing-ocs-storage) `` for the environment deployment.  

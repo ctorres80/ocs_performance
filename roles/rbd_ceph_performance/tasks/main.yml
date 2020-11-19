@@ -2,8 +2,8 @@
 - pause:
     prompt: |
           Select the task number:
-              - 1 -> Deploy fio statefulset, replicas in project=testing-ocs-storage, testing and cleaning the environment
-              - 2 -> Running postgres pgbench from Template, testing and cleaning the environment
+              - 1 -> FIO: Create project=testing-ocs-storage, deploy fio statefulset, scale to a number of replicas, testing and cleaning the environment
+              - 2 -> Running postgres pgbench from custom template, testing and cleaning the environment
   register: benchmark
 
 - name: Fio testing
