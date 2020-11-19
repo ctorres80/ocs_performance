@@ -5,3 +5,11 @@ pvc_yml: './roles/rbd_ceph_performance/templates/pvc.yml'
 kubeconfig: '$HOME/.kube/config'
 # ocs namespace
 name_space: 'testing-ocs-storage'
+# postgres namespace base
+pgbench_project: 'my-testing-pgbench-ocs-'
+# pgbench options it will run 64 clients, 8 threads for 300 secs
+pgbench_options: ' -c 64 -j 16 -P 30 -T 300 sampledb'
+# ocs ceph block provisioner
+rbd_provisioner: 'openshift-storage.rbd.csi.ceph.com'
+# ocs ceph file provisioner
+cephfs_provisioner: 'openshift-storage.cephfs.csi.ceph.com'

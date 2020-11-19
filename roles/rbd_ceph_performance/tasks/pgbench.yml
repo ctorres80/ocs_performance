@@ -1,0 +1,126 @@
+- pause:
+    prompt: |
+          How many pg DBs to deploy?:
+          - 4, 8, 16?
+  register: db_instances
+- pause:
+    prompt: |
+          What's the scaling option? The amount of capacity will be "scaling_option x 16MB"
+          - 50, 100, 500, 1000, 5000?
+  register: scaling_option
+
+- name: Select storage class
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | egrep "{{ rbd_provisioner }}|{{ cephfs_provisioner  }}" | awk  '{print $1}'
+  register: ocs_storage_classes
+
+- name: Available storage classess
+  debug:
+        msg:
+          - "Select the storage class: "
+          - "{{ ocs_storage_classes.stdout_lines }}"
+
+- pause:
+    prompt: |
+          Select the storage class:
+  register: storage_class
+
+- name: 'Modify statefulset with the storageclass accordingly'
+  lineinfile:
+    path: roles/rbd_ceph_performance/templates/pgbench-template.yml
+    regexp: '^    storageClassName: '
+    line: '    storageClassName: {{ storage_class.user_input }}'
+
+# Create the namespaces and pgbench instances
+- name: Create the postgres template, namespace and DB instance
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc apply -f roles/rbd_ceph_performance/templates/pgbench-template.yml
+    for i in {1..{{ db_instances.user_input | int }}}
+    do
+      oc create namespace {{ pgbench_project }}$i
+      oc label namespace {{ pgbench_project }}$i "openshift.io/cluster-monitoring=true"
+    done
+    for i in {1..{{ db_instances.user_input | int }}}
+    do
+      oc new-app --name=postgresql-ocs-$i --template=postgresql-persistent-ocs -n {{ pgbench_project }}$i
+    done
+  register: pgbench_instances
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+  ignore_errors: yes
+
+- debug:
+    msg: "Waiting for {{ db_instances.user_input | int * 15 }} seconds"
+
+# Pause before starting benchmarking
+- name: Waiting for pgbench_instances pods ready
+  pause:
+    seconds: "{{ db_instances.user_input | int * 15 }}"
+
+- name: Running pgbench inizialization
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    user=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
+    service=$(oc -n {{ pgbench_project }}{{ item }} get service -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
+    postgres_pod=$(oc -n {{ pgbench_project }}{{ item }} get pods -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
+    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service -i -s {{ scaling_option.user_input }} sampledb
+  with_sequence: start=1 end={{ db_instances.user_input | int }}
+  register: _create_instances
+  async: 3600  # Maximum runtime in seconds. Adjust as needed.
+  poll: 0  # Fire and continue (never poll)
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+  ignore_errors: yes
+
+- name: Waiting for pgbench inizialization pgbench -i -s {{ scaling_option.user_input }} sampledb
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: _jobs
+  until: _jobs.finished
+  delay: 10  # Check every 5 seconds. Adjust as you like.
+  retries: 360  # Retry up to 10 times. Adjust as needed.
+  loop: "{{ _create_instances.results }}"
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+  ignore_errors: yes
+
+- name: Running pgbench baseline
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    user=$(oc -n {{ pgbench_project }}{{ item }} get secrets postgresql -o jsonpath='{.data.database-user}{"\n"}' | base64 -d)
+    service=$(oc -n {{ pgbench_project }}{{ item }} get service -o jsonpath='{range .items[*]}{@.spec.clusterIP}{"\n"}')
+    postgres_pod=$(oc -n {{ pgbench_project }}{{ item }} get pods -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | grep -v deploy)
+    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service {{ pgbench_options }}
+  with_sequence: start=1 end={{ db_instances.user_input | int }}
+  register: _create_instances
+  async: 3600  # Maximum runtime in seconds. Adjust as needed.
+  poll: 0  # Fire and continue (never poll)
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+  ignore_errors: yes
+#    oc -n {{ pgbench_project }}{{ item }} exec $postgres_pod -- pgbench -U $user -h $service -c 8 -j 8 -t 10000 sampledb
+
+- name: Waiting for pgbench baseline pgbench {{ pgbench_options }}
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: _jobs
+  until: _jobs.finished
+  delay: 10  # Check every 5 seconds. Adjust as you like.
+  retries: 360  # Retry up to 10 times. Adjust as needed.
+  loop: "{{ _create_instances.results }}"
+  when: db_instances.user_input | int > 0 and scaling_option.user_input | int > 0
+
+- name: Print benchmarks stats
+  debug:
+    msg: "{{ item.stdout_lines }}"
+  loop: "{{ _jobs.results }}"
+  ignore_errors: yes
+
+# Delete the namespaces and pgbench instances
+- name: Delete the postgres namespaces and DB instances
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    for i in {1..{{ db_instances.user_input | int }}}
+    do
+      oc delete all,pvc --all -n {{ pgbench_project }}$i
+      oc delete project {{ pgbench_project }}$i
+    done
+    oc delete -f roles/rbd_ceph_performance/templates/pgbench-template.yml
