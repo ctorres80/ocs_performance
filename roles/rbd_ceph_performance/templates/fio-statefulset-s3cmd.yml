@@ -51,6 +51,15 @@ spec:
         volumeMounts:
         - mountPath: /usr/share/ocs-pvc
           name: test-ocs-pvc
+      - name: fio-s3cmd
+        image: quay.io/intellihr/s3sync:latest
+        command:
+          - sleep
+          - "86400"
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /opt/data
+          name: test-ocs-pvc
       restartPolicy: Always
       schedulerName: default-scheduler
   volumeClaimTemplates:
@@ -58,9 +67,8 @@ spec:
       name: test-ocs-pvc
     spec:
       accessModes:
-        - ReadWriteOnce
+        - ReadWriteMany
       resources:
         requests:
           storage: 100Gi
-      storageClassName: ocs-storagecluster-ceph-rbd
-      
+      storageClassName: ocs-storagecluster-cephfs
