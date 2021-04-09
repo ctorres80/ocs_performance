@@ -9,8 +9,9 @@ spec:
   use_upstream_images: true
   backup_storage_locations:
     - config:
+        profile: default
         region: noobaa
-        s3_url: https://s3-openshift-storage.apps.cluster-008e.008e.example.opentlc.com
+        s3_url: https://s3-openshift-storage.apps.cluster-a2bc.a2bc.example.opentlc.com
         s3_force_path_style: true
         insecure_skip_tls_verify: true
       credentials_secret_ref:
@@ -18,7 +19,7 @@ spec:
         namespace: oadp-operator
       name: default
       object_storage:
-        bucket: oadp-backup-7f40bfb1-958b-49e4-8687-6409f7039c41
+        bucket: test-velero-c53171e3-1585-40cb-ac62-5f1615e51553
         prefix: velero
       provider: aws
   default_velero_plugins:
