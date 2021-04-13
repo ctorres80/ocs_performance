@@ -4,6 +4,8 @@
           Select the task number:
               - 1 -> FIO: Create project=testing-ocs-storage, deploy fio statefulset, scale to a number of replicas, testing and cleaning the environment
               - 2 -> POSTGRES: Running pgbench from custom template, testing and cleaning the environment
+              - 3 -> s3cmd: Create a number of fio instances with cephfs pvc, mount from s3cmd pod and sync objects in MCG
+              - 4 -> pvc: Create an INPUT number of pvcs 
   register: benchmark
 
 - name: Fio testing
@@ -14,11 +16,10 @@
   include_tasks: pgbench.yml
   when: benchmark.user_input == "2"
 
+- name: s3cmd testing
+  include_tasks: s3cmd.yml
+  when: benchmark.user_input == "3"
 
-#- name: s3cmd testing
-#  include_tasks: s3cmd.yml
-#  when: benchmark.user_input == "4"
-
-#- name: s3cmd delete
-#  include_tasks: s3cmd-delete.yml
-#  when: benchmark.user_input == "5"
+- name: pvc testing
+  include_tasks: lets_create_pvc.yml
+  when: benchmark.user_input == "4"
