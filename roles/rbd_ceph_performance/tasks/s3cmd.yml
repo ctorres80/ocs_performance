@@ -1,4 +1,20 @@
 ---
+- name: Select storage class
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | egrep "ocs-storagecluster-ceph-rgw|openshift-storage.noobaa.io" | awk  '{print $1}'
+  register: ocs_storage_classes
+
+- name: Available storage classess
+  debug:
+        msg:
+          - "Select the storage class: "
+          - "{{ ocs_storage_classes.stdout_lines }}"
+- pause:
+    prompt: |
+          Select the storage class:
+  register: storage_class
+
 - pause:
     prompt: |
           How many fio pods ?
@@ -36,6 +52,19 @@
 - name: fio pods available for OCS testing with storage class {{ storage_class.user_input }}
   debug:
     msg: "{{ fio_pods_print.stdout_lines }}"
+
+- name: Let's create {{ fio_pods.user_input }} obcs with storageclass {{ storage_class.user_input }}
+  shell: |
+    sed -i '4d' roles/rbd_ceph_performance/templates/create_buckets.yml
+    sed -i '$d' roles/rbd_ceph_performance/templates/create_buckets.yml
+    sed -i '$d' roles/rbd_ceph_performance/templates/create_buckets.yml
+    sed -i '/metadata:/a \ \ name: odf-obc-{{ item }}' roles/rbd_ceph_performance/templates/create_buckets.yml
+    sed -i '/spec:/a \ \ storageClassName: {{ storage_class.user_input }}' roles/rbd_ceph_performance/templates/create_buckets.yml
+    sed -i '/\ \ storageClassName:/a \ \ generateBucketName: odf-bucket-{{ item }}' roles/rbd_ceph_performance/templates/create_buckets.yml
+    oc -n {{ name_space }} apply -f roles/rbd_ceph_performance/templates/create_buckets.yml
+  args:
+    warn: false
+  with_sequence: start=0 end={{ fio_pods.user_input|int - 1 }}
 
 - pause:
     prompt: |
@@ -106,21 +135,14 @@
   loop: "{{ _jobs.results }}"
   when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
-- name: Let's create {{ fio_pods.user_input }} obcs with storageclass openshift-storage.noobaa.io
+- name: s3cmd sync commands RGW
   shell: |
-    sed -i '4d' roles/rbd_ceph_performance/templates/create_buckets.yml
-    sed -i '$d' roles/rbd_ceph_performance/templates/create_buckets.yml
-    sed -i '/metadata:/a \ \ name: odf-obc-{{ item }}' roles/rbd_ceph_performance/templates/create_buckets.yml
-    sed -i '/\ \ storageClassName:/a \ \ generateBucketName: odf-bucket-{{ item }}' roles/rbd_ceph_performance/templates/create_buckets.yml
-    oc -n {{ name_space }} apply -f roles/rbd_ceph_performance/templates/create_buckets.yml
-    sleep 10
-  args:
-    warn: false
-  with_sequence: start=0 end={{ fio_pods.user_input|int - 1 }}
-
-- name: s3cmd sync commands
-  shell: |
-    endpoint=$(oc get services s3 -n openshift-storage -o yaml -o jsonpath='{.spec.clusterIP}{"\n"}')
+    if [ "{{ storage_class.user_input|string }}" = "ocs-storagecluster-ceph-rgw" ]; then
+       endpoint_s3="rook-ceph-rgw-s3a"
+    else
+       endpoint_s3="s3"
+    fi
+    endpoint=$(oc get services $endpoint_s3 -n openshift-storage -o yaml -o jsonpath='{.spec.clusterIP}{"\n"}')
     for i in {0..{{ fio_pods.user_input|int - 1 }}}
         do
           access_key=$(oc get secrets odf-obc-$i -n {{ name_space }} -o jsonpath='{.data.AWS_ACCESS_KEY_ID}{"\n"}' | base64 -d)
@@ -129,7 +151,9 @@
           echo "fio-testing-performance-$i -c fio-s3cmd -n {{ name_space }} -- s3cmd --host-bucket= --no-ssl --host=$endpoint --access_key=$access_key --secret_key=$secret_key sync /opt/data/ s3://$bucket"
     done
   register: s3_cmds
-
+- name: Available storage classess
+  debug:
+    msg: "{{ s3_cmds.stdout_lines }}"
 - name: s3cmd sync execute
   shell: |
     export KUBECONFIG={{ kubeconfig }}
@@ -153,7 +177,7 @@
     msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"
 
-- name: Testing fio testing storage class completed!!! I'm going to clean fio environment
+- name: I'm going to clean fio environment
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc delete -f roles/rbd_ceph_performance/templates/fio-statefulset-s3cmd.yml

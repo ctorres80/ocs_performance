@@ -1,7 +1,7 @@
 apiVersion: objectbucket.io/v1alpha1
 kind: ObjectBucketClaim
 metadata:
-  name: odf-obc-5
+  name: odf-obc-3
 spec:
   storageClassName: openshift-storage.noobaa.io
-  generateBucketName: odf-bucket-5
+  generateBucketName: odf-bucket-3
