@@ -37,30 +37,19 @@
        accessmode="ReadWriteMany"
     fi
     sed -i '/metadata:/a \ \ name: pvc-{{ item }}' roles/rbd_ceph_performance/templates/pvc.yml
-    sed -i '/\ \ accessModes:/a \ \ - $accessmode' roles/rbd_ceph_performance/templates/pvc.yml
+    sed -i "/\ \ accessModes:/a \ \ - $accessmode" roles/rbd_ceph_performance/templates/pvc.yml
     sed -i '/\ \ \ \ storage:/a \ \ storageClassName: {{ storage_class.user_input }}' roles/rbd_ceph_performance/templates/pvc.yml
     oc -n {{ name_space }} create -f roles/rbd_ceph_performance/templates/pvc.yml
-    oc get pvc pvc-{{ item }}
   args:
     warn: false
   with_sequence: start=1 end={{ pvcs_number.user_input|int }}
-  register: _create_instances
-  async: 3600  # Maximum runtime in seconds. Adjust as needed.
-  poll: 0  # Fire and continue (never poll)
 
-- name: Testing storage class {{ storage_class.user_input }} pvc creation
-  async_status:
-    jid: "{{ item.ansible_job_id }}"
-  register: _jobs
-  until: _jobs.finished
-  delay: 10  # Check every 5 seconds. Adjust as you like.
-  retries: 360  # Retry up to 10 times. Adjust as needed.
-  loop: "{{ _create_instances.results }}"
-
-- name: Print oc get pvc
-  debug:
-    msg: "{{ item.stdout_lines }}"
-  loop: "{{ _jobs.results }}"
+#- name: Let's check pvcs created
+#  shell: |
+#    while [[ $(oc -n {{ name_space }} get pvc pvc-{{ item }} -o 'jsonpath={..status.phase}') != "Bound" ]]; do echo "waiting for PVC status" && sleep 1; done
+#  args:
+#    warn: false
+#  with_sequence: start=1 end={{ pvcs_number.user_input|int }}
 
 - name: Let's delete {{ pvcs_number.user_input }} pvcs with storage class {{ storage_class.user_input }}
   shell: |
@@ -73,7 +62,7 @@
        accessmode="ReadWriteMany"
     fi
     sed -i '/metadata:/a \ \ name: pvc-{{ item }}' roles/rbd_ceph_performance/templates/pvc.yml
-    sed -i '/\ \ accessModes:/a \ \ - $accessmode' roles/rbd_ceph_performance/templates/pvc.yml
+    sed -i "/\ \ accessModes:/a \ \ - $accessmode" roles/rbd_ceph_performance/templates/pvc.yml
     sed -i '/\ \ \ \ storage:/a \ \ storageClassName: {{ storage_class.user_input }}' roles/rbd_ceph_performance/templates/pvc.yml
     oc -n {{ name_space }} delete -f roles/rbd_ceph_performance/templates/pvc.yml
   args:
@@ -82,17 +71,3 @@
   register: _create_instances
   async: 3600  # Maximum runtime in seconds. Adjust as needed.
   poll: 0  # Fire and continue (never poll)
-
-- name: Testing storage class {{ storage_class.user_input }} pvc creation
-  async_status:
-    jid: "{{ item.ansible_job_id }}"
-  register: _jobs
-  until: _jobs.finished
-  delay: 10  # Check every 5 seconds. Adjust as you like.
-  retries: 360  # Retry up to 10 times. Adjust as needed.
-  loop: "{{ _create_instances.results }}"
-
-- name: Print oc delete pvc
-  debug:
-    msg: "{{ item.stdout_lines }}"
-  loop: "{{ _jobs.results }}"

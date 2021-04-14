@@ -10,6 +10,7 @@
         msg:
           - "Select the storage class: "
           - "{{ ocs_storage_classes.stdout_lines }}"
+
 - pause:
     prompt: |
           Select the storage class:
@@ -17,7 +18,7 @@
 
 - pause:
     prompt: |
-          How many fio pods ?
+          How many fio pods do you need?
   register: fio_pods
 
 - name: Create the fio+s3cmd statefulset fio-testing-performance accordingly
@@ -26,7 +27,7 @@
     oc create -f roles/rbd_ceph_performance/templates/fio-statefulset-s3cmd.yml
   ignore_errors: yes
 
-- name: Scale fio for OCS to {{ fio_pods.user_input }} pods in namespace {{ name_space }}
+- name: Scale fio statefulset {{ fio_pods.user_input }} pods in namespace {{ name_space }}
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc -n {{ name_space }} scale statefulset fio-testing-performance --replicas={{ fio_pods.user_input }}
@@ -75,8 +76,8 @@
 
 - pause:
     prompt: |
-          Valid I/O size in KB example:
-          - 4, 8, 16, 32, 64, 128, 256, 1024, 2048, 4096 ?
+          Object size (KB) example:
+          - 256, 512, 1024, 2048, 4096 ?
   register: io_size
 
 - pause:
@@ -87,21 +88,8 @@
 
 - pause:
     prompt: |
-          IO in GB total in GB (max 100):
+          Total IO in (GB) per fio session (max 100):
   register: io_total
-
-- pause:
-    prompt: |
-          IO rw_mix_read:
-  register: rwmixread
-  when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
-
-- pause:
-    prompt: |
-          IO rwmixwrite:
-  register: rwmixwrite
-  when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
-
 
 - name: Collect fio-testing-performance pod names
   shell: |
@@ -109,7 +97,7 @@
     oc get pods -n {{ name_space }} -l app=fio-testing-performance -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
   register: fio_ceph_tool_pods
 
-- name: fio bench read, write, randwrite
+- name: Exec fio pods
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1048576 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1
@@ -129,13 +117,13 @@
   loop: "{{ _create_instances.results }}"
   when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
-- name: Print fio benchmarks
+- name: Printing fio benchmarks results
   debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"
   when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
-- name: s3cmd sync commands RGW
+- name: s3cmd sync commands with OBC with {{ storage_class.user_input|string }} storageclass
   shell: |
     if [ "{{ storage_class.user_input|string }}" = "ocs-storagecluster-ceph-rgw" ]; then
        endpoint_s3="rook-ceph-rgw-s3a"
@@ -151,7 +139,8 @@
           echo "fio-testing-performance-$i -c fio-s3cmd -n {{ name_space }} -- s3cmd --host-bucket= --no-ssl --host=$endpoint --access_key=$access_key --secret_key=$secret_key sync /opt/data/ s3://$bucket"
     done
   register: s3_cmds
-- name: Available storage classess
+
+- name: Exec s3cmd sessions
   debug:
     msg: "{{ s3_cmds.stdout_lines }}"
 - name: s3cmd sync execute
@@ -163,7 +152,7 @@
   async: 3600  # Maximum runtime in seconds. Adjust as needed.
   poll: 0  # Fire and continue (never poll)
 
-- name: Wait for s3cmd sync completed
+- name: Waiting for s3cmd sync completed
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
@@ -172,13 +161,14 @@
   retries: 360  # Retry up to 10 times. Adjust as needed.
   loop: "{{ _create_instances.results }}"
 
-- name: Print s3cmd sync stats
+- name: Printing s3cmd sync stats
   debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"
 
-- name: I'm going to clean fio environment
+- name: I'm going to clean fio environment ;)
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc delete -f roles/rbd_ceph_performance/templates/fio-statefulset-s3cmd.yml
   ignore_errors: yes
+  
