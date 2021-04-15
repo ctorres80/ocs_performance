@@ -1,0 +1,59 @@
+---
+- name: "Collect OCS workers"
+  shell: |
+    oc get nodes -l cluster.ocs.openshift.io/openshift-storage= -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
+  register: workers
+
+- name: "Collect device by-id and size"
+  shell:
+        cmd: |
+          cat > {{ config_yaml }} << EOF
+          apiVersion: local.storage.openshift.io/v1
+          kind: LocalVolume
+          metadata:
+            name: local-block
+            namespace: local-storage
+          spec:
+            nodeSelector:
+              nodeSelectorTerms:
+              - matchExpressions:
+                  - key: cluster.ocs.openshift.io/openshift-storage
+                    operator: In
+                    values:
+                    - ""
+            storageClassDevices:
+              - storageClassName: localblock
+                volumeMode: Block
+                devicePaths:
+          EOF
+  args:
+    executable: /bin/bash
+
+- name: "Collect device by-id"
+  shell: |
+    oc debug node/{{ item }} -- ls -l {{ device_by_id_path }}  | egrep -v "^total|-part[1-9]|dm-[0-9]|loop|lvm" | sed -e 's/ -> / /g ; s/..\/..\///g' | awk -v hostname="{{ item }}" -F ' ' '{ print $NF,hostname,"/dev/disk/by-id/"$(NF-1)}' | sort -u -k1,1 > {{ file_tmp_1 }}
+    oc debug node/{{ item }} -- lsblk -b -n -o name,SIZE | egrep -v "\-|rbd|loop" | awk -F ' ' '{ print $1,$2}' | sort -u -k1,1 > {{ file_tmp_2 }}
+    join {{ file_tmp_1 }} {{ file_tmp_2 }} | while read line; do
+    size=$(echo $line | awk -F ' ' '{print $NF}')
+      if [ $size -ge {{ disk_size_bytes }} ]
+      then
+        let "size = $size/1024/1024/1024"
+        device_byid=$(echo $line | awk -F ' ' '{print $3}')
+        device=$(echo $line | awk -F ' ' '{print $1}')
+        echo "        - $device_byid # $device    $size GB    {{ item }}" >> {{ config_yaml }}
+      fi
+    done
+  loop: "{{ workers.stdout_lines }}"
+
+- name: Print to screen config file {{ config_yaml }}
+  command: /bin/cat {{ config_yaml }}
+  register: config_devices
+
+- debug: msg="{{ config_devices.stdout_lines }}"
+- name: Clean files
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ file_tmp_1 }}"
+    - "{{ file_tmp_2 }}"

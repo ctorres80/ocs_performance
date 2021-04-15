@@ -1,0 +1,25 @@
+---
+  - name: "Playbook for Ceph OSD mapping in OpenShift"
+    hosts: localhost
+    connection: local
+    vars_files:
+      - ./vars/vars.yml
+    vars_prompt:
+      - name: lets_run
+        prompt: |
+              Hey there, what do you want to do?
+              1=List device-byid for Create/Update loca-storage CR
+              2=Replace a failed OSD (interactive)
+              3=Listing OSD information deviceset|pv|pvc|host
+        private: no
+        default: "0"
+    tasks:
+      - name: List devices with /host/dev/disk/by-id for Create/Update loca-storage CR
+        include: devices_by_id.yml
+        when: lets_run | int == 1
+      - name: Remove failed OSD
+        include: remove_osd.yml
+        when: lets_run | int == 2
+      - name: List OSD information deviceset|pv|pvc|host
+        include: list_osds.yml
+        when: lets_run | int == 3

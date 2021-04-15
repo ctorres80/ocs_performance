@@ -1,0 +1,5 @@
+---
+# pvc.yml path
+machineset_project: 'openshift-machine-api'
+oldinstancetype: 'm5.4xlarge'
+instancetype: 'c5d.metal'

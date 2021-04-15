@@ -1,0 +1,25 @@
+---
+- name: Listing OSD information deviceset|pv|pvc|host
+  block:
+    - name: "Get device->pv->pvc->host information"
+      shell: |
+        echo "PVC,OSD_ID,PV,MOUNT_POINT,PROVISIONED-BY" > {{ file_tmp_3 }}
+        TOOLS_POD=$(oc get pods -n {{ name_space }} -l app=rook-ceph-tools -o name)
+        oc get pv -o json | jq '.items[] | select(.spec.claimRef.name | tostring | contains("deviceset") ) | [.spec.claimRef.name,.metadata.name,.spec.local.path,.spec.nodeAffinity.required.nodeSelectorTerms[0].matchExpressions[0].values[0]] | @csv'  | sed -e 's/"//g; s/\\//g'  | sort -u -k 1 -t ','  > {{ file_tmp_1 }}
+        oc exec -n {{ name_space }} $TOOLS_POD -it -- {{ ceph_osd_tree }} | tr -dc '[:print:]' | jq '.nodes[] | select(.type=="host") | [ .name,.children[] ] | @csv' | sed -e 's/"//g; s/\\//g' | sort -u -k 1 -t ',' > {{ file_tmp_2 }}
+        join -t , {{ file_tmp_2 }} {{ file_tmp_1 }} >> {{ file_tmp_3 }}
+        cat {{ file_tmp_3 }} | column -t -s ","
+        echo
+        echo "OSD_ID,TYPE,WEIGHT,STATUS" > {{ file_tmp_3 }}
+        oc exec -n {{ name_space }}  $TOOLS_POD -it -- {{ ceph_osd_tree }} |  tr -dc '[:print:]' | jq '.nodes[] | select(.type=="osd") | [ .name,.device_class,.crush_weight,.status ] | @csv' | sed -e 's/"//g; s/\\//g'  | sort -u -k 1 -t ',' >> {{ file_tmp_3 }}
+        cat {{ file_tmp_3 }} | column -t -s ","
+      register: get_information
+    - debug: msg="{{ get_information.stdout_lines }}"
+    - name: Clean files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ file_tmp_1 }}"
+        - "{{ file_tmp_2 }}"
+        - "{{ file_tmp_3 }}"

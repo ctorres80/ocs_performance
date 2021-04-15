@@ -1,0 +1,8 @@
+file_tmp_1: "./file_tmp_1"
+file_tmp_2: "./file_tmp_2"
+file_tmp_3: "./file_tmp_3"
+device_by_id_path: "/host/dev/disk/by-id"
+disk_size_bytes: 507374182400
+name_space: "openshift-storage"
+ceph_osd_tree: "ceph osd tree -f json-pretty"
+config_yaml: "./local-storage-block.yaml"

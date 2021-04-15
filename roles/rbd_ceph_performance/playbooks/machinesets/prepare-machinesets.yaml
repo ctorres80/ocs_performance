@@ -1,0 +1,39 @@
+---
+- name: Prepare machinesets for OCS, from existing workers machinesets
+  hosts: localhost
+  connection: local
+  vars_files:
+      - ./vars/vars.yaml
+  tasks:
+    - name: Collect the machinesets names
+      shell:
+                cmd: |
+                  oc -n {{ machineset_project }} get machinesets -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
+      register: machinesets
+    - name: Export the machinesets in yaml files
+      shell:
+                cmd: |
+                        oc -n {{ machineset_project }} get machinesets {{ item }} -o yaml |  sed -e 's/{{ item }}/ocs-worker-{{ item.split('-')[5:8] | join('-') }}/g' | sed -e 's/{{ oldinstancetype }}/{{ instancetype }}/g' > ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+      loop: "{{ machinesets.stdout_lines }}"
+
+    - name: Configure label in nodes
+      lineinfile:
+        path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+        state: absent
+        regexp: '^      metadata: {}'
+      loop: "{{ machinesets.stdout_lines }}"
+    - name: Add ocs labels
+      blockinfile:
+        path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+        insertbefore: "      providerSpec:"
+        block: |2
+                taints:
+                - effect: NoSchedule
+                  key: node.ocs.openshift.io/storage
+                  value: "true"
+                metadata:
+                  creationTimestamp: null
+                  labels:
+                    node-role.kubernetes.io/infra: ""
+                    cluster.ocs.openshift.io/openshift-storage: ""
+      loop: "{{ machinesets.stdout_lines }}"
