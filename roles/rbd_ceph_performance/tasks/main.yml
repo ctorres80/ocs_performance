@@ -1,12 +1,14 @@
 ---
 - pause:
     prompt: |
-          The playbook automate the following taks:
-          - Create project: testing-ocs-storage
-          - Deploy fio-performance-testing statefulset
-          - Scale the statefulset to a number of pods based on user INPUT
-          - Testing the workload profiles based on fio interactive INPUT
-          - When the benchmark is finished it takes care to clean the test environment
+          #################################################################################
+          # The playbook automate the following taks:                                     #
+          # - Create project: testing-ocs-storage                                         #
+          # - Deploy fio-performance-testing statefulset                                  #
+          # - Scale the statefulset to a number of pods based on user INPUT               #
+          # - Testing the workload profiles based on fio interactive INPUT                #
+          # - When the benchmark is finished it takes care to clean the test environment  #
+          #################################################################################
           
           Select the task number:
               1 -> FIO: Running synthetic becnhmark fio workload profile based on user INPUT
