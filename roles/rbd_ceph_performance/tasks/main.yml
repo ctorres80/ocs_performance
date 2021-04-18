@@ -1,11 +1,18 @@
 ---
 - pause:
     prompt: |
+          The playbook automate the following taks:
+          - Create project: testing-ocs-storage
+          - Deploy fio-performance-testing statefulset
+          - Scale the statefulset to a number of pods based on user INPUT
+          - Testing the workload profiles based on fio interactive INPUT
+          - When the benchmark is finished it takes care to clean the test environment
+          
           Select the task number:
-              - 1 -> FIO: Create project=testing-ocs-storage, deploy fio statefulset, scale to a number of replicas, testing and cleaning the environment
-              - 2 -> POSTGRES: Running pgbench from custom template, testing and cleaning the environment
-              - 3 -> s3cmd: Create a number of fio instances with cephfs pvc, mount from s3cmd pod and sync objects in MCG
-              - 4 -> pvc: Create an INPUT number of pvcs 
+              1 -> FIO: 
+              2 -> POSTGRES: Running pgbench from custom template, testing and cleaning the environment
+              3 -> s3cmd: Create a number of fio instances with cephfs pvc, mount from s3cmd pod and sync objects in MCG
+              4 -> pvc: Create an INPUT number of pvcs 
   register: benchmark
 
 - name: Fio testing

@@ -1,0 +1,32 @@
+- pause:
+    prompt: |
+          How many fio pods ?
+  register: fio_pods
+- name: Create the fio statefulset fio-testing-performance accordingly
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc create -f roles/rbd_ceph_performance/templates/fio-statefulset.yml
+  ignore_errors: yes
+- name: Scale fio for OCS to {{ fio_pods.user_input }} pods in namespace {{ name_space }}
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} scale statefulset fio-testing-performance --replicas={{ fio_pods.user_input }}
+  when: fio_pods.user_input != ''
+  ignore_errors: yes
+- name: Waiting for the availability of fio replicas={{ fio_pods.user_input }}
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} get statefulsets fio-testing-performance -o yaml -o jsonpath='{.items[*]}{@.status.readyReplicas}{"\n"}'
+  register: fio_pods_ready
+  until: fio_pods_ready.stdout | int == fio_pods.user_input | int
+  retries: 60
+  delay: 10
+- shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} get pods -o wide
+  register: fio_pods_print
+  when: fio_pods.user_input != ''
+  ignore_errors: yes
+- name: fio pods available in statefulset fio-testing-performance with pvc from storage class {{ storage_class.user_input }}
+  debug:
+    msg: "{{ fio_pods_print.stdout_lines }}"

@@ -1,132 +1,17 @@
-- name: Select storage class
-  shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | egrep "{{ rbd_provisioner }}|{{ cephfs_provisioner  }}" | awk  '{print $1}'
-  register: ocs_storage_classes
-
-- name: Available storage classess
-  debug:
-        msg:
-          - "Select the storage class: "
-          - "{{ ocs_storage_classes.stdout_lines }}"
-
-- pause:
-    prompt: |
-          Select the storage class:
-  register: storage_class
-
-- name: Looking for storage provisioner
-  shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | grep "{{ storage_class.user_input }}" | awk  '{print $2}'
-  register: ocs_storage_provisioner
-
-- name: 'Modify statefulset for block accordingly provisioner'
-  lineinfile:
-    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
-    regexp: '^        - ReadWrite'
-    line: '        - ReadWriteOnce'
-  when: ocs_storage_provisioner.stdout == "openshift-storage.rbd.csi.ceph.com"
-
-- name: 'Modify statefulset for file accordingly provisioner'
-  lineinfile:
-    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
-    regexp: '^        - ReadWrite'
-    line: '        - ReadWriteMany'
-  when: ocs_storage_provisioner.stdout == "openshift-storage.cephfs.csi.ceph.com"
-
-- name: 'Modify statefulset with the storageclass accordingly'
-  lineinfile:
-    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
-    regexp: '^      storageClassName: '
-    line: '      storageClassName: {{ storage_class.user_input }}'
-
-- pause:
-    prompt: |
-          How many fio pods ?
-  register: fio_pods
-
-- name: Create the fio statefulset fio-testing-performance accordingly
-  shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc create -f roles/rbd_ceph_performance/templates/fio-statefulset.yml
-  ignore_errors: yes
-
-- name: Scale fio for OCS to {{ fio_pods.user_input }} pods in namespace {{ name_space }}
-  shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc -n {{ name_space }} scale statefulset fio-testing-performance --replicas={{ fio_pods.user_input }}
-  when: fio_pods.user_input != ''
-  ignore_errors: yes
-
-- name: Waiting for the availability of fio replicas={{ fio_pods.user_input }}
-  shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc -n {{ name_space }} get statefulsets fio-testing-performance -o yaml -o jsonpath='{.items[*]}{@.status.readyReplicas}{"\n"}'
-  register: fio_pods_ready
-  until: fio_pods_ready.stdout | int == fio_pods.user_input | int
-  retries: 60
-  delay: 10
-
-- shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc -n {{ name_space }} get pods -o wide
-  register: fio_pods_print
-  when: fio_pods.user_input != ''
-  ignore_errors: yes
-
-- name: fio pods available for OCS testing with storage class {{ storage_class.user_input }}
-  debug:
-    msg: "{{ fio_pods_print.stdout_lines }}"
-
-- pause:
-    prompt: |
-          Valid I/O type (Only one option is available):
-          - read
-          - write
-          - randwrite
-          - randread
-          - readwrite
-          - randrw
-  register: io_type
-
-- pause:
-    prompt: |
-          Valid I/O size in KB example:
-          - 4, 8, 16, 32, 64, 128, 256, 1024, 2048, 4096 ?
-  register: io_size
-
-- pause:
-    prompt: |
-          Valid io_threads example:
-          - 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096
-  register: io_threads
-
-- pause:
-    prompt: |
-          IO in GB total in GB (max 100):
-  register: io_total
-
-- pause:
-    prompt: |
-          IO rw_mix_read:
-  register: rwmixread
-  when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
-
-- pause:
-    prompt: |
-          IO rwmixwrite:
-  register: rwmixwrite
-  when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
-
-
+---
+- name: Include task StorageClasses in play
+  import_tasks: storage_classess.yml
+- name: Include task fio statefulset and scalability in play
+  import_tasks: fio_pods.yml
+- name: Include task fio workload profile in play
+  import_tasks: fio_profile.yml
 - name: Collect fio-testing-performance pod names
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc get pods -n {{ name_space }} -l app=fio-testing-performance -o name -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'
   register: fio_ceph_tool_pods
 
-- name: fio bench mixed rbd rw with storage class {{ storage_class.user_input }}
+- name: fio benchmarking mixed rbd rw with storage class {{ storage_class.user_input }}
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --rwmixread={{ rwmixread.user_input }} --rwmixwrite={{ rwmixwrite.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1
@@ -146,13 +31,13 @@
   loop: "{{ _create_instances.results }}"
   when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
-- name: Print fio benchmarks stats testing storage class {{ storage_class.user_input }}
+- name: Print fio benchmarking stats with storage class {{ storage_class.user_input }}
   debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"
   when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
-- name: fio bench read, write, randwrite with storage class {{ storage_class.user_input }}
+- name: fio benchmarking read, write, randwrite with storage class {{ storage_class.user_input }}
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc exec -n {{ name_space }} {{ item }} -it -- fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1024 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1
@@ -172,7 +57,7 @@
   loop: "{{ _create_instances.results }}"
   when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
-- name: Print fio benchmarks stats testing storage class {{ storage_class.user_input }}
+- name: Print fio benchmarking stats testing storage class {{ storage_class.user_input }}
   debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ _jobs.results }}"

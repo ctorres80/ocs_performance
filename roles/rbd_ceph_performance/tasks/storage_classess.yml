@@ -1,0 +1,34 @@
+- shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc get sc -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | egrep "^ocs"
+  register: ocs_storage_classes
+- debug:
+        msg:
+          - "Available storage classess: "
+          - "{{ ocs_storage_classes.stdout_lines }}"
+- pause:
+    prompt: |
+          Select the storage class:
+  register: storage_class
+  - name: Looking for storage provisioner
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | grep "{{ storage_class.user_input }}" | awk  '{print $2}'
+  register: ocs_storage_provisioner
+- name: 'Modify statefulset for block accordingly'
+  lineinfile:
+    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
+    regexp: '^        - ReadWrite'
+    line: '        - ReadWriteOnce'
+  when: ocs_storage_provisioner.stdout == "openshift-storage.rbd.csi.ceph.com"
+- name: 'Modify statefulset for file accordingly'
+  lineinfile:
+    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
+    regexp: '^        - ReadWrite'
+    line: '        - ReadWriteMany'
+  when: ocs_storage_provisioner.stdout == "openshift-storage.cephfs.csi.ceph.com"
+- name: 'Modify statefulset with the storageclass accordingly'
+  lineinfile:
+    path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
+    regexp: '^      storageClassName: '
+    line: '      storageClassName: {{ storage_class.user_input }}'

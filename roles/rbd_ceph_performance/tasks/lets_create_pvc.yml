@@ -1,26 +1,8 @@
 ---
-- name: Select storage class
-  shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | egrep "{{ rbd_provisioner }}|{{ cephfs_provisioner  }}" | awk  '{print $1}'
-  register: ocs_storage_classes
-- name: Available storage classess
-  debug:
-        msg:
-          - "Select the storage class: "
-          - "{{ ocs_storage_classes.stdout_lines }}"
-
-- pause:
-    prompt: |
-          Select the storage class:
-  register: storage_class
-
-- name: Create the statefulset fio-testing-performance accordingly
-  shell: |
-    export KUBECONFIG={{ kubeconfig }}
-    oc create -f roles/rbd_ceph_performance/templates/fio-statefulset.yml
-  ignore_errors: yes
-
+- name: Include task StorageClasses in play
+  import_tasks: storage_classess.yml
+- name: Include task fio statefulset in play
+  import_tasks: fio_pods.yml
 - pause:
     prompt: |
           How many pvcs do you need?
@@ -43,13 +25,6 @@
   args:
     warn: false
   with_sequence: start=1 end={{ pvcs_number.user_input|int }}
-
-#- name: Let's check pvcs created
-#  shell: |
-#    while [[ $(oc -n {{ name_space }} get pvc pvc-{{ item }} -o 'jsonpath={..status.phase}') != "Bound" ]]; do echo "waiting for PVC status" && sleep 1; done
-#  args:
-#    warn: false
-#  with_sequence: start=1 end={{ pvcs_number.user_input|int }}
 
 - name: Let's delete {{ pvcs_number.user_input }} pvcs with storage class {{ storage_class.user_input }}
   shell: |
