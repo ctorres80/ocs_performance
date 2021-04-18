@@ -13,8 +13,38 @@
     prompt: |
           Select the OBC Storage Class:
   register: storage_class
-- name: Include task fio statefulset and scalability in play
-  import_tasks: fio_pods.yml
+- pause:
+    prompt: |
+          How many fio pods do you need?
+  register: fio_pods
+- name: Create the fio+s3cmd statefulset fio-testing-performance accordingly
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc create -f roles/rbd_ceph_performance/templates/fio-statefulset-s3cmd.yml
+  ignore_errors: yes
+- name: Scale fio statefulset {{ fio_pods.user_input }} pods in namespace {{ name_space }}
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} scale statefulset fio-testing-performance --replicas={{ fio_pods.user_input }}
+  when: fio_pods.user_input != ''
+  ignore_errors: yes
+- name: Waiting for the availability of fio replicas={{ fio_pods.user_input }}
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} get statefulsets fio-testing-performance -o yaml -o jsonpath='{.items[*]}{@.status.readyReplicas}{"\n"}'
+  register: fio_pods_ready
+  until: fio_pods_ready.stdout | int == fio_pods.user_input | int
+  retries: 60
+  delay: 10
+- shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc -n {{ name_space }} get pods -o wide
+  register: fio_pods_print
+  when: fio_pods.user_input != ''
+  ignore_errors: yes
+- name: fio pods available for OCS testing with storage class {{ storage_class.user_input }}
+  debug:
+    msg: "{{ fio_pods_print.stdout_lines }}"
 - name: Let's create {{ fio_pods.user_input }} obcs with storageclass {{ storage_class.user_input }}
   shell: |
     sed -i '4d' roles/rbd_ceph_performance/templates/create_buckets.yml
