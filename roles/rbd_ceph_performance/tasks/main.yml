@@ -10,11 +10,13 @@
           # - When the benchmark is finished it takes care to clean the test environment  #
           #################################################################################
           
-          Select the task number:
-              1 -> FIO: Running synthetic becnhmark fio workload profile based on user INPUT
-              2 -> POSTGRES: Running pgbench on number of DB instances based on user INPUT
-              3 -> s3cmd: Create a number of fio instances with cephfs pvc, mount from s3cmd pod and sync objects in MCG buckets
-              4 -> pvc: Create an INPUT number of pvcs and loop for a number of pvs based on user INPUT
+          #################################################################################
+          # Select the task number:                                                       #
+          # 1 -> FIO: Running fio workload profile based on user INPUT                    #
+          # 2 -> POSTGRES: Running pgbench on a number of DBs based on user INPUT         #
+          # 3 -> S3CMD: Data ingestion on cephfs pvc then s3cmd sync to MCG buckets       #
+          # 4 -> PVC CREATE: Create an INPUT number of pvcs based on user INPUT           #
+          #################################################################################
   register: benchmark
 
 - name: Fio testing
