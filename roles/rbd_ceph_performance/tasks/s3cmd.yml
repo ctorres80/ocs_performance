@@ -2,7 +2,7 @@
 - name: Select the OBC Storage Class from
   shell: |
     export KUBECONFIG={{ kubeconfig }}
-    oc get sc -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | egrep "^ceph-rgw|noobaa.io"
+    oc get sc -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | egrep "ceph-rgw|noobaa.io"
   register: ocs_storage_classes
 - name: OBC Storage classess
   debug:
