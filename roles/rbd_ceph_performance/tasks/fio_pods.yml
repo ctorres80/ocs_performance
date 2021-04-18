@@ -1,6 +1,6 @@
 - pause:
     prompt: |
-          How many fio pods ?
+          How many fio pods do you want to test?
   register: fio_pods
 - name: Create the fio statefulset fio-testing-performance accordingly
   shell: |
@@ -13,7 +13,7 @@
     oc -n {{ name_space }} scale statefulset fio-testing-performance --replicas={{ fio_pods.user_input }}
   when: fio_pods.user_input != ''
   ignore_errors: yes
-- name: Waiting for the availability of fio replicas={{ fio_pods.user_input }}
+- name: Waiting for the availability of fio pods={{ fio_pods.user_input }}
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc -n {{ name_space }} get statefulsets fio-testing-performance -o yaml -o jsonpath='{.items[*]}{@.status.readyReplicas}{"\n"}'
