@@ -1,6 +1,6 @@
 - shell: |
     export KUBECONFIG={{ kubeconfig }}
-    oc get sc -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | egrep "^ocs"
+    oc get sc -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}' | egrep "ceph-rbd|cephfs"
   register: ocs_storage_classes
 - debug:
         msg:
