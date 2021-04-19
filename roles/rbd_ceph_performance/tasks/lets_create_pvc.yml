@@ -10,19 +10,28 @@
     prompt: |
           How many pvcs do you need?
   register: pvcs_number
-- name: Let's create {{ pvcs_number.user_input }} pvcs with storage class {{ storage_class.user_input }}
+- pause:
+    prompt: |
+          What't the pvc size? in (Gi)
+  register: pvcs_size
+- name: Let's adapt the pvcs template with storage class {{ storage_class.user_input }}
   shell: |
-    sed -i '5d' roles/rbd_ceph_performance/templates/pvc.yml
     sed -i '/  - ReadWrite/d' roles/rbd_ceph_performance/templates/pvc.yml
     sed -i '$d' roles/rbd_ceph_performance/templates/pvc.yml
+    sed -i -E 's/storage: .+?(Gi).+?/storage: {{ pvcs_size.user_input }}Gi/g' roles/rbd_ceph_performance/templates/pvc.yml
     if [ "{{ storage_class.user_input|string }}" = "ocs-storagecluster-ceph-rbd" ]; then
        accessmode="ReadWriteOnce"
     else
        accessmode="ReadWriteMany"
     fi
-    sed -i '/metadata:/a \ \ name: pvc-{{ item }}' roles/rbd_ceph_performance/templates/pvc.yml
     sed -i "/\ \ accessModes:/a \ \ - $accessmode" roles/rbd_ceph_performance/templates/pvc.yml
     sed -i '/\ \ \ \ storage:/a \ \ storageClassName: {{ storage_class.user_input }}' roles/rbd_ceph_performance/templates/pvc.yml
+  args:
+    warn: false
+- name: Let's create {{ pvcs_number.user_input|int }} pvcs with storage class {{ storage_class.user_input }}
+  shell: |
+    sed -i '5d' roles/rbd_ceph_performance/templates/pvc.yml
+    sed -i '/metadata:/a \ \ name: pvc-{{ item }}' roles/rbd_ceph_performance/templates/pvc.yml
     oc -n {{ name_space }} create -f roles/rbd_ceph_performance/templates/pvc.yml
   args:
     warn: false
@@ -30,26 +39,14 @@
 - name: Pause for 30 seconds to let pvc creation finished
   pause:
     seconds: 30
-- name: Let's delete {{ pvcs_number.user_input }} pvcs with storage class {{ storage_class.user_input }}
+- name: Let's delete {{ pvcs_number.user_input|int }} pvcs with storage class {{ storage_class.user_input }}
   shell: |
     sed -i '5d' roles/rbd_ceph_performance/templates/pvc.yml
-    sed -i '/  - ReadWrite/d' roles/rbd_ceph_performance/templates/pvc.yml
-    sed -i '$d' roles/rbd_ceph_performance/templates/pvc.yml
-    if [ "{{ storage_class.user_input|string }}" = "ocs-storagecluster-ceph-rbd" ]; then
-       accessmode="ReadWriteOnce"
-    else
-       accessmode="ReadWriteMany"
-    fi
     sed -i '/metadata:/a \ \ name: pvc-{{ item }}' roles/rbd_ceph_performance/templates/pvc.yml
-    sed -i "/\ \ accessModes:/a \ \ - $accessmode" roles/rbd_ceph_performance/templates/pvc.yml
-    sed -i '/\ \ \ \ storage:/a \ \ storageClassName: {{ storage_class.user_input }}' roles/rbd_ceph_performance/templates/pvc.yml
     oc -n {{ name_space }} delete -f roles/rbd_ceph_performance/templates/pvc.yml
   args:
     warn: false
   with_sequence: start=1 end={{ pvcs_number.user_input|int }}
-  register: _create_instances
-  async: 3600  # Maximum runtime in seconds. Adjust as needed.
-  poll: 0  # Fire and continue (never poll)
 - name: Task4 pvc create with storage class {{ storage_class.user_input }} completed!!! I'm going to clean the testing environment
   shell: |
     export KUBECONFIG={{ kubeconfig }}

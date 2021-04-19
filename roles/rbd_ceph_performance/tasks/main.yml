@@ -16,6 +16,7 @@
           # 2 -> POSTGRES: Running pgbench on a number of DBs based on user INPUT         #
           # 3 -> S3CMD: Data ingestion on cephfs pvc then s3cmd sync to MCG buckets       #
           # 4 -> PVC CREATE: Create an INPUT number of pvcs based on user INPUT           #
+          #################################################################################
   register: benchmark
 
 - name: Fio testing
