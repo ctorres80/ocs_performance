@@ -50,3 +50,8 @@
   register: _create_instances
   async: 3600  # Maximum runtime in seconds. Adjust as needed.
   poll: 0  # Fire and continue (never poll)
+- name: Task4 pvc create with storage class {{ storage_class.user_input }} completed!!! I'm going to clean the testing environment
+  shell: |
+    export KUBECONFIG={{ kubeconfig }}
+    oc delete -f roles/rbd_ceph_performance/templates/fio-statefulset.yml
+  ignore_errors: yes
