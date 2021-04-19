@@ -10,7 +10,7 @@
     prompt: |
           Select the storage class:
   register: storage_class
-  - name: Looking for storage provisioner
+- name: Looking for storage provisioner
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc get sc -o=custom-columns=NAME:.metadata.name,PROVISIONER:.provisioner | grep "{{ storage_class.user_input }}" | awk  '{print $2}'
