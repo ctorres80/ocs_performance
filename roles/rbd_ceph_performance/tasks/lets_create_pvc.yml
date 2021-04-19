@@ -47,7 +47,7 @@
   args:
     warn: false
   with_sequence: start=1 end={{ pvcs_number.user_input|int }}
-- name: Task4 pvc create with storage class {{ storage_class.user_input }} completed!!! I'm going to clean the testing environment
+- name: I'm going to clean the testing environment
   shell: |
     export KUBECONFIG={{ kubeconfig }}
     oc delete -f roles/rbd_ceph_performance/templates/fio-statefulset.yml
