@@ -22,10 +22,9 @@
   args:
     warn: false
   with_sequence: start=1 end={{ pvcs_number.user_input|int }}
-- pause:
-    prompt: |
-          How many pvcs do you need?
-  register: pvcs_number
+- name: Pause for 30 seconds to let pvc creation finished
+  pause:
+    seconds: 30
 - name: Let's delete {{ pvcs_number.user_input }} pvcs with storage class {{ storage_class.user_input }}
   shell: |
     sed -i '5d' roles/rbd_ceph_performance/templates/pvc.yml
