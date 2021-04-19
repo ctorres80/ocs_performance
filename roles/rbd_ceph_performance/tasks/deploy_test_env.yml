@@ -21,7 +21,7 @@
   poll: 0  # Fire and continue (never poll)
   when: io_type.user_input == "readwrite" or io_type.user_input == "randrw"
 
-- name: Testing storage class {{ storage_class.user_input }} with fio
+- name: fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1048576 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1 --alloc-size=1048576
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
@@ -47,7 +47,7 @@
   poll: 0  # Fire and continue (never poll)
   when: io_type.user_input == "read" or io_type.user_input == "write" or io_type.user_input == "randwrite" or io_type.user_input == "randread"
 
-- name: Testing storage class {{ storage_class.user_input }} with fio
+- name: fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --directory=/usr/share/ocs-pvc --bs={{ io_size.user_input }}K --iodepth={{ io_threads.user_input }} --size={{ io_total.user_input }}G --rw={{ io_type.user_input }} --nrfiles={{ io_total.user_input|int|round(0,'common') * 1048576 / io_size.user_input|int|round(0,'common') }} --refill_buffers=1 --alloc-size=1048576
   async_status:
     jid: "{{ item.ansible_job_id }}"
   register: _jobs
