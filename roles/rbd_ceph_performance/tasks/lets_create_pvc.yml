@@ -19,7 +19,7 @@
     sed -i '/  - ReadWrite/d' roles/rbd_ceph_performance/templates/pvc.yml
     sed -i '$d' roles/rbd_ceph_performance/templates/pvc.yml
     sed -i -E 's/storage: .+?(Gi).+?/storage: {{ pvcs_size.user_input }}Gi/g' roles/rbd_ceph_performance/templates/pvc.yml
-    provisioner=$(oc -n {{ name_space }} create -f roles/rbd_ceph_performance/templates/pvc.yml)
+    provisioner=$(oc get sc {{ storage_class.user_input }} -o jsonpath='{range .items[*]}{@.provisioner}')
     if [ $provisioner = "openshift-storage.rbd.csi.ceph.com" ]; then
        accessmode="ReadWriteOnce"
     else
