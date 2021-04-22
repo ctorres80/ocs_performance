@@ -33,3 +33,4 @@ kubeconfig: '$HOME/.kube/config'
 
 ## Performance testing
 ### Just watch the video ;)
+[![Watch the video](https://github.com/ctorres80/ocs_performance/tree/master/roles/rbd_ceph_performance/files/video_picture.png)](https://youtu.be/KssJ35seKWU)
