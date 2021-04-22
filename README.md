@@ -32,5 +32,5 @@ kubeconfig: '$HOME/.kube/config'
 - Ansible at least v2.8 
 
 ## Performance testing
-### Just watch the video ;)
+### Just click on the image below ;)
 [![Watch the video](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/video_picture.png)](https://youtu.be/KssJ35seKWU)
