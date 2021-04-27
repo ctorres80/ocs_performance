@@ -47,12 +47,12 @@
     msg: "{{ fio_pods_print.stdout_lines }}"
 - name: Let's create {{ fio_pods.user_input }} obcs with storageclass {{ storage_class.user_input }}
   shell: |
-    sed -i '4d' roles/rbd_ceph_performance/templates/create_buckets.yml
-    sed -i '$d' roles/rbd_ceph_performance/templates/create_buckets.yml
-    sed -i '$d' roles/rbd_ceph_performance/templates/create_buckets.yml
-    sed -i '/metadata:/a \ \ name: odf-obc-{{ item }}' roles/rbd_ceph_performance/templates/create_buckets.yml
-    sed -i '/spec:/a \ \ storageClassName: {{ storage_class.user_input }}' roles/rbd_ceph_performance/templates/create_buckets.yml
-    sed -i '/\ \ storageClassName:/a \ \ generateBucketName: odf-bucket-{{ item }}' roles/rbd_ceph_performance/templates/create_buckets.yml
+    sed "s/  name: .*/  name: odf-obc-{{ item }}/" roles/rbd_ceph_performance/templates/create_buckets.yml > roles/rbd_ceph_performance/templates/create_buckets_tmp.yml
+    mv roles/rbd_ceph_performance/templates/create_buckets_tmp.yml roles/rbd_ceph_performance/templates/create_buckets.yml
+    sed "s/  storageClassName: .*/  storageClassName: {{ storage_class.user_input }}/" roles/rbd_ceph_performance/templates/create_buckets.yml > roles/rbd_ceph_performance/templates/create_buckets_tmp.yml
+    mv roles/rbd_ceph_performance/templates/create_buckets_tmp.yml roles/rbd_ceph_performance/templates/create_buckets.yml
+    sed "s/  generateBucketName: .*/  generateBucketName: odf-obc-{{ item }}/" roles/rbd_ceph_performance/templates/create_buckets.yml > roles/rbd_ceph_performance/templates/create_buckets_tmp.yml
+    mv roles/rbd_ceph_performance/templates/create_buckets_tmp.yml roles/rbd_ceph_performance/templates/create_buckets.yml
     oc -n {{ name_space }} apply -f roles/rbd_ceph_performance/templates/create_buckets.yml
   args:
     warn: false
