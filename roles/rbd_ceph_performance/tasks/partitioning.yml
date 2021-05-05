@@ -1,0 +1,25 @@
+- name: "Getting ODF worker info"
+  shell: |
+    oc get nodes -l cluster.ocs.openshift.io/openshift-storage= -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
+  register: ocs_workers
+- name: " I will create 2 partitions per free DISK"
+  shell: |
+    oc debug node/{{ item }} -- lsblk -o NAME | grep ^[a-z] | while read disk
+    do
+        oc debug node/{{ item }} -- sfdisk --part-type /dev/$disk 1 &> /dev/null
+        if [ "$?" -gt 0 ]
+        then
+                oc debug node/{{ item }} -- parted /dev/$disk -s mklabel gpt mkpart primary 1 50% mkpart primary 50% 100%
+                oc debug node/{{ item }} -- partprobe /dev/$disk
+                echo "/dev/$disk PARTITIONED:"
+                oc debug node/{{ item }} -- parted /dev/$disk -s p
+        else
+                echo "/dev/$disk SKIPPED"
+        fi
+    done
+  loop: "{{ ocs_workers.stdout_lines }}"
+  register: osd_partition_results
+
+- debug:
+    msg: "{{ item.stdout_lines }}"
+  loop: "{{ osd_partition_results.results }}"
