@@ -1,22 +1,23 @@
 ---
 - pause:
     prompt: |
-          #################################################################################
-          # The playbook automate the following taks:                                     #
-          # - Create project: testing-ocs-storage                                         #
-          # - Deploy fio-performance-testing statefulset                                  #
-          # - Scale the statefulset to a number of pods based on user INPUT               #
-          # - Testing the workload profiles based on fio interactive INPUT                #
-          # - When the benchmark is finished it takes care to clean the test environment  #
-          #################################################################################
+          ###########################################################################################
+          # The playbook automate the following taks:                                               #
+          # - Create project: testing-ocs-storage                                                   #
+          # - Deploy fio-performance-testing statefulset                                            #
+          # - Scale the statefulset to a number of pods based on user INPUT                         #
+          # - Testing the workload profiles based on fio interactive INPUT                          #
+          # - When the benchmark is finished it takes care to clean the test environment            #
+          ###########################################################################################
 
-          #################################################################################
-          # Select the task number:                                                       #
-          # 1 -> FIO: Running fio workload profile based on user INPUT                    #
-          # 2 -> POSTGRES: Running pgbench on a number of DBs based on user INPUT         #
-          # 3 -> S3CMD: Data ingestion on cephfs pvc then s3cmd sync to MCG buckets       #
-          # 4 -> PVC CREATE: Create an INPUT number of pvcs based on user INPUT           #
-          #################################################################################
+          ###########################################################################################
+          # Select the task number:                                                                 #
+          # 1 -> FIO: Running fio workload profile based on user INPUT                              #
+          # 2 -> POSTGRES: Running pgbench on a number of DBs based on user INPUT                   #
+          # 3 -> S3CMD: Data ingestion on cephfs pvc then s3cmd sync to MCG buckets                 #
+          # 4 -> PVC CREATE: Create an INPUT number of pvcs based on user INPUT                     #
+          # 5 -> PARTITION OSDs on nodes with label: cluster.ocs.openshift.io/openshift-storage=    #
+          ###########################################################################################
   register: benchmark
 
 - name: Fio testing
@@ -34,3 +35,7 @@
 - name: pvc testing
   include_tasks: lets_create_pvc.yml
   when: benchmark.user_input == "4"
+
+- name: OSD partitoning
+  include_tasks: partitioning.yml
+  when: benchmark.user_input == "5"
