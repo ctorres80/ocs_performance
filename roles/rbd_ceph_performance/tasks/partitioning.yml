@@ -2,7 +2,18 @@
   shell: |
     oc get nodes -l cluster.ocs.openshift.io/openshift-storage= -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
   register: ocs_workers
-- name: " I will create 2 partitions per free DISK"
+
+- name: "Partition table before"
+  shell: |
+         oc get nodes -l cluster.ocs.openshift.io/openshift-storage= -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | while read node; do oc debug node/$node -- lsblk; done
+  loop: "{{ ocs_workers.stdout_lines }}"
+  register: osd_partition_results
+
+- debug:
+    msg: "{{ item.stdout_lines }}"
+  loop: "{{ osd_partition_results.results }}"
+
+- name: "I will create 2 partitions per free DISK"
   shell: |
     oc debug node/{{ item }} -- lsblk -o NAME | grep ^[a-z] | while read disk
     do
@@ -18,9 +29,13 @@
         fi
     done
   loop: "{{ ocs_workers.stdout_lines }}"
+
+- name: "Partition table after"
+  shell: |
+         oc get nodes -l cluster.ocs.openshift.io/openshift-storage= -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | while read node; do oc debug node/$node -- lsblk; done
+  loop: "{{ ocs_workers.stdout_lines }}"
   register: osd_partition_results
 
 - debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ osd_partition_results.results }}"
-  
