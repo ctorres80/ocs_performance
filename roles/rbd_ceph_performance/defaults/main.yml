@@ -13,3 +13,7 @@ pgbench_options: ' -c 64 -j 16 -P 30 -T 300 sampledb'
 rbd_provisioner: 'openshift-storage.rbd.csi.ceph.com'
 # ocs ceph file provisioner
 cephfs_provisioner: 'openshift-storage.cephfs.csi.ceph.com'
+machineset_project: 'openshift-machine-api'
+oldinstancetype: 'm5.4xlarge'
+instancetype: 'm5.4xlarge'
+ebs_size: 4096

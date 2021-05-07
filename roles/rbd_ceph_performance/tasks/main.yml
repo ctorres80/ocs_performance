@@ -17,6 +17,7 @@
           # 3 -> S3CMD: Data ingestion on cephfs pvc then s3cmd sync to MCG buckets                 #
           # 4 -> PVC CREATE: Create an INPUT number of pvcs based on user INPUT                     #
           # 5 -> PARTITION OSDs on nodes with label: cluster.ocs.openshift.io/openshift-storage=    #
+          # 6 -> DEPLOY STRETCHED CLUSTER INFRA: 3 AZ, Replica-4 (2 OSD nodes in 2 AZ + arbiter     #
           ###########################################################################################
   register: benchmark
 
@@ -39,3 +40,8 @@
 - name: OSD partitoning
   include_tasks: partitioning.yml
   when: benchmark.user_input == "5"
+
+- name: Infra stretched cluster deployment
+  include_tasks: prepare-machinesets-stretched.yaml
+  when: benchmark.user_input == "6"
+  
