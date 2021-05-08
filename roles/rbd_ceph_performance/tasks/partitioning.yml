@@ -32,10 +32,11 @@
 
 - name: "Partition table after"
   shell: |
-         oc debug node/$node -- lsblk
+         oc debug node/{{ item }} -- lsblk
   loop: "{{ ocs_workers.stdout_lines }}"
   register: osd_partition_results
 
 - debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ osd_partition_results.results }}"
+  

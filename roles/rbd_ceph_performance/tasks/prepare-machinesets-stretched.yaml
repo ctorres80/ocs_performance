@@ -119,9 +119,6 @@
                     oc apply -f ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
   loop: "{{ machinesets.stdout_lines }}"
 
-- name: Pause for 6 minutes just some waiting time for provisioning machines
+- name: Pause for 5 minutes just some waiting time for provisioning machines
   pause:
-    minutes: 6
-
-- name: partitioning disks
-  include_tasks: partitioning.yml
+    minutes: 5
