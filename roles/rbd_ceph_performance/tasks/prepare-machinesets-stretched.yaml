@@ -123,5 +123,5 @@
   pause:
     minutes: 6
 
-# - name: partitioning disks
-#  include_tasks: partitioning.yml
+- name: partitioning disks
+  include_tasks: partitioning.yml

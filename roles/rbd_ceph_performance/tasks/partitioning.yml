@@ -61,3 +61,4 @@
 - debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ osd_partition_results.results }}"
+  
