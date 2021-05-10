@@ -1,9 +1,9 @@
-- name: "Getting ODF worker info datacenter1"
+- name: "Getting ODF workers from {{ zone_1 }}"
   shell: |
-    oc get nodes -l topology.kubernetes.io/zone=datacenter1 -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
+    oc get nodes -l topology.kubernetes.io/zone={{ zone_1 }} -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
   register: ocs_workers
 
-- name: "I will create 2 partitions per free DISK on servers in datacenter1"
+- name: "I will create 2 partitions per free DISK on servers in {{ zone_1 }}"
   shell: |
     oc debug node/{{ item }} -- lsblk -o NAME | grep ^[a-z] | while read disk
     do
@@ -20,7 +20,7 @@
     done
   loop: "{{ ocs_workers.stdout_lines }}"
 
-- name: "Partition on datacenter1 nodes"
+- name: "Partition on {{ zone_1 }} nodes"
   shell: |
          oc debug node/{{ item }} -- lsblk
   loop: "{{ ocs_workers.stdout_lines }}"
@@ -30,12 +30,12 @@
     msg: "{{ item.stdout_lines }}"
   loop: "{{ osd_partition_results.results }}"
 
-- name: "Getting ODF worker info datacenter2"
+- name: "Getting ODF workers from {{ zone_2 }}"
   shell: |
-    oc get nodes -l topology.kubernetes.io/zone=datacenter2 -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
+    oc get nodes -l topology.kubernetes.io/zone={{ zone_2 }} -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
   register: ocs_workers
 
-- name: "I will create 2 partitions per free DISK on servers in datacenter2"
+- name: "I will create 2 partitions per free DISK on servers in {{ zone_2 }}"
   shell: |
     oc debug node/{{ item }} -- lsblk -o NAME | grep ^[a-z] | while read disk
     do
@@ -52,7 +52,7 @@
     done
   loop: "{{ ocs_workers.stdout_lines }}"
 
-- name: "Partition on datacenter2 nodes"
+- name: "Partition on zone {{ zone_2 }} nodes"
   shell: |
          oc debug node/{{ item }} -- lsblk
   loop: "{{ ocs_workers.stdout_lines }}"
@@ -61,4 +61,3 @@
 - debug:
     msg: "{{ item.stdout_lines }}"
   loop: "{{ osd_partition_results.results }}"
-  

@@ -1,12 +1,10 @@
-- name: "I will create 2 partitions per free DISK on servers in datacenter1"
+- name: "Creating aws credentials and config file"
   shell: |
           region=$(oc get machines -n openshift-machine-api -o jsonpath='{range .items[*]}{.spec.providerSpec.value.placement.region}{"\n"}{end}'  | head -1)
           aws_access_key_id=$(oc -n kube-system get secret aws-creds -o yaml | grep "^  aws_access_key_id" | awk -F": " '{print $2 }' | base64 -d )
           aws_secret_access_key=$(oc -n kube-system get secret aws-creds -o yaml | egrep '^  aws_secret_access_key' | awk -F': ' '{print $2 }' | base64 -d)
           echo -e "[default]\naws_access_key_id=$aws_access_key_id\naws_secret_access_key=$aws_secret_access_key" > credentials
           echo -e "[default]\nregion=$region\noutput=json" > config
-          oc get nodes -l topology.kubernetes.io/zone=datacenter2 -o  jsonpath='{range .items[*]}{.spec.providerID}{"\n"}{end}'  | awk -F/ '{print $NF}'
-  register: nodes_to_shutdown
 
 - name: Copy aws config
   file:
@@ -22,3 +20,68 @@
   copy:
     src: ./config
     dest: "{{ home_user }}/.aws/config"
+
+- name: "nodes to shutdown in zone2"
+  shell: |
+          oc get nodes -l topology.kubernetes.io/zone={{ zone_2 }} -o  jsonpath='{range .items[*]}{.spec.providerID}{"\n"}{end}'  | awk -F/ '{print $NF}'
+  register: nodes_to_shutdown
+
+- name: "nodes to shutdown"
+  debug:
+    var: nodes_to_shutdown.stdout
+
+- shell: |
+          oc get nodes -l topology.kubernetes.io/zone={{ zone_2 }}
+  register: nodes_status
+
+- name: "nodes to shutdown in zone2 status"
+  debug:
+    var: nodes_status.stdout_lines
+
+- name: "Shutdown {{ zone_2 }} nodes"
+  shell: |
+         aws ec2 stop-instances --instance-ids {{ item }}
+  loop: "{{ nodes_to_shutdown.stdout_lines }}"
+
+- name: Pause for 1 minutes before restart
+  pause:
+    minutes: 1
+
+- shell: |
+          oc get nodes -l topology.kubernetes.io/zone={{ zone_2 }}
+  register: nodes_status
+
+- name: "nodes to shutdown in zone2 status"
+  debug:
+    var: nodes_status.stdout_lines
+
+- name: Pause for 5 minutes before restart
+  pause:
+    minutes: 5
+
+- name: "Restart {{ zone_2 }} nodes"
+  shell: |
+         aws ec2 start-instances --instance-ids {{ item }}
+  loop: "{{ nodes_to_shutdown.stdout_lines }}"
+
+- name: Pause for 1 minutes before restart
+  pause:
+    minutes: 1
+
+- shell: |
+          oc get nodes -l topology.kubernetes.io/zone={{ zone_2 }}
+  register: nodes_status
+
+- name: "nodes to shutdown in zone2 status"
+  debug:
+    var: nodes_status.stdout_lines
+
+- name: "Clean credentials file"
+  file:
+    path: ./credentials
+    state: absent
+
+- name: "Clean config file"
+  file:
+    path: ./config
+    state: absent

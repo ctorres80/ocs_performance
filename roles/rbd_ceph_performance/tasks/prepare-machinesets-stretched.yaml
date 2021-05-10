@@ -66,7 +66,7 @@
   when: not item | string is search ("1c")
   loop: "{{ machinesets.stdout_lines }}"
 
-- name: Add ocs labels to OSD nodes to datacenter1
+- name: Add ocs labels to OSD nodes to zone1
   blockinfile:
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertbefore: "      providerSpec:"
@@ -79,11 +79,11 @@
               creationTimestamp: null
               labels:
                 node-role.kubernetes.io/infra: ""
-                topology.kubernetes.io/zone: datacenter1
+                topology.kubernetes.io/zone: {{ zone_1 }}
   when: item | string is search ("1a")
   loop: "{{ machinesets.stdout_lines }}"
 
-- name: Add ocs labels to OSD nodes to datacenter2
+- name: Add ocs labels to OSD nodes to zone_2
   blockinfile:
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertbefore: "      providerSpec:"
@@ -96,7 +96,7 @@
               creationTimestamp: null
               labels:
                 node-role.kubernetes.io/infra: ""
-                topology.kubernetes.io/zone: datacenter2
+                topology.kubernetes.io/zone: {{ zone_2 }}
   when: item | string is search ("1b")
   loop: "{{ machinesets.stdout_lines }}"
 
@@ -109,7 +109,7 @@
               creationTimestamp: null
               labels:
                 node-role.kubernetes.io/infra: ""
-                topology.kubernetes.io/zone: arbiter
+                topology.kubernetes.io/zone: {{ arbiter }}
   when: item | string is search ("1c")
   loop: "{{ machinesets.stdout_lines }}"
 
@@ -125,3 +125,10 @@
 
 - name: partitioning disks
   include_tasks: partitioning.yml
+
+- name: Delete yaml files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob:
+    - "./*.yaml"

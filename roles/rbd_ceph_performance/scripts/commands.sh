@@ -21,3 +21,5 @@ oc get pods -l app=fio-testing-performance -o jsonpath='{range .items[*]}{.metad
 oc get pod -l app=fio-testing-performance -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.nodeName}{"\t"}{.spec.volumes[*].persistentVolumeClaim.claimName}{"\t"}{"\n"}{end}' | while read output; do pvc=$(echo $output | cut -d' ' -f3); pv=$(oc get pvc $pvc -o jsonpath='{.items[*]}{.spec.volumeName}{"\n"}');echo -e "$output \t $pv";done | while read line; do pv=$(echo $line | cut -d' ' -f4); node=$(echo $line | cut -d' ' -f2);mountpoint=$(oc debug node/$node -- df -hk | grep $pv | awk '{print $NF}'); echo "oc debug node/$node -- fstrim $mountpoint; sleep 5";done > fstrim_pvc.sh; chmod +x fstrim_pvc.sh
 # Scale noobaa postgress from operator to 4 cpus
 oc -n openshift-storage patch Noobaa noobaa --type=json -p '[{"op": "replace", "path": "/spec/endpoints/resources/limits/cpu", "value":4}]'
+# Create simple blog application
+curl -s https://raw.githubusercontent.com/red-hat-storage/ocs-training/master/training/modules/ocs4/attachments/configurable-rails-app.yaml | oc new-app -p STORAGE_CLASS=ocs-storagecluster-ceph-rbd -p VOLUME_CAPACITY=50Gi -f -
