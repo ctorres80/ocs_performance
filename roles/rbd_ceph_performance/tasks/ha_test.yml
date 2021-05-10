@@ -1,0 +1,24 @@
+- name: "I will create 2 partitions per free DISK on servers in datacenter1"
+  shell: |
+          region=$(oc get machines -n openshift-machine-api -o jsonpath='{range .items[*]}{.spec.providerSpec.value.placement.region}{"\n"}{end}'  | head -1)
+          aws_access_key_id=$(oc -n kube-system get secret aws-creds -o yaml | grep "^  aws_access_key_id" | awk -F": " '{print $2 }' | base64 -d )
+          aws_secret_access_key=$(oc -n kube-system get secret aws-creds -o yaml | egrep '^  aws_secret_access_key' | awk -F': ' '{print $2 }' | base64 -d)
+          echo -e "[default]\naws_access_key_id=$aws_access_key_id\naws_secret_access_key=$aws_secret_access_key" > credentials
+          echo -e "[default]\nregion=$region\noutput=json" > config
+          oc get nodes -l topology.kubernetes.io/zone=datacenter2 -o  jsonpath='{range .items[*]}{.spec.providerID}{"\n"}{end}'  | awk -F/ '{print $NF}'
+  register: nodes_to_shutdown
+
+- name: Copy aws config
+  file:
+    path: "{{ home_user }}/.aws/"
+    state: directory
+
+- name: Copy aws credentials
+  copy:
+    src: ./credentials
+    dest: "{{ home_user }}/.aws/credentials"
+
+- name: Copy aws config
+  copy:
+    src: ./config
+    dest: "{{ home_user }}/.aws/config"
