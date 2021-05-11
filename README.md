@@ -29,7 +29,10 @@ kubeconfig: '$HOME/.kube/config'
 [![Watch the video](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/video_picture.png)](https://youtu.be/KssJ35seKWU)
 
 ## OpenShift Data Foundation v4.7
-The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF operator container image is `image: quay.io/rhceph-dev/ocs-registry:latest-4.7` 
-### Enable operator
+The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF operator container image is:  
+`image: quay.io/rhceph-dev/ocs-registry:latest-4.7` 
+### Order your lab environment
 You need to be authenticated to get to quay.io/rhceph-dev
 [![Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)]
+### ansible role taks
+[![The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)]
