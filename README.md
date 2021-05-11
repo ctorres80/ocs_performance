@@ -5,7 +5,7 @@
 - [OpenShift Data Foundation v4.7](#OpenShift-Data-Foundation-v47)
    -  [Order your lab environment from RHPDS](#Order-your-lab-environment-from-RHPDS)
    -  [Ansible role taks required](#Ansible-role-taks-required)
-   -  [Deploy ODF v4.7](#Deploy-ODF-v47)
+   -  [Deploy ODF v4.7 Stretched Cluster](#Deploy-ODF-v47-Stretched-Cluster)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
