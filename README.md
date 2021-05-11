@@ -2,7 +2,7 @@
 - [Introduction](#Introduction)
 - [Requirements](#Requirements)
 - [Performance testing](#performance-testing)
-- [ODF v4.7](#odf-v4\.7)
+- [ODF v4.7](#OpenShift-Data-Foundation-v4\.7)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
@@ -28,7 +28,7 @@ kubeconfig: '$HOME/.kube/config'
 ### Just click on the image below ;)
 [![Watch the video](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/video_picture.png)](https://youtu.be/KssJ35seKWU)
 
-## ODF v4\.7
+## OpenShift Data Foundation v4.7
 ### Enable operator
 You need to be authenticated to get to quay.io/rhceph-dev
 [![Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)]
