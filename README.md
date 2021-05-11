@@ -41,6 +41,7 @@ The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF o
 ### Ansible role taks required
 ![The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)
 `# 6 -> Install ODF v4.7 RC operator (tag latest-4.7)                                      #`  
+![Install ODF v4.7 RC operator](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/3.png)
 - Replace the token authentication secret to allow access to `ocs-registry:latest-4.7`
 - Waiting for 5 mins, you can monitor what's happening with:  
 ```bash
@@ -48,7 +49,7 @@ watch oc get nodes
 ```
 - Install the ODF v4.7 Operator from template `roles/rbd_ceph_performance/templates/odfv47.yml`
 - If everything has been completed successfully you will see that the OCS Operator version 4.7 will be available 
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/3.png)
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/4.png)
 
 
 `# 7 -> DEPLOY STRETCHED CLUSTER VMs: 3 AZs, Replica-4 (2 OSD nodes in 2 AZ + arbiter)     #`
