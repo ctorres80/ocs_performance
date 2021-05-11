@@ -115,7 +115,7 @@ ocs-worker-west-1b-vsfv6                     Running   m5.4xlarge   eu-west-1   
 ocs-worker-west-1c-z7dwp                     Running   m5.4xlarge   eu-west-1   eu-west-1c   5m30s
 ```
 After 6 minutes the playbook will try to partition the 4TB EBS in 2x2TB partitions, make sure that the playbook will return the following output per node (if it doesn't work you can run again the ansible role and try option #5 PARTITION)
-``
+```
   msg:
   - NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
   - 'nvme1n1     259:0    0    4T  0 disk '
