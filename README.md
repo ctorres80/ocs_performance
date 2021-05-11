@@ -47,3 +47,5 @@ The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF o
 watch oc get nodes
 ```
 - Install the ODF v4.7 Operator from template `roles/rbd_ceph_performance/templates/odfv47.yml`
+- If everything has been completed successfully you will see that the OCS Operator version 4.7 will be available 
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/3.png)
