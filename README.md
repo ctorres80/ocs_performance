@@ -43,5 +43,7 @@ The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF o
 `# 6 -> Install ODF v4.7 RC operator (tag latest-4.7)                                      #`  
 - Replace the token authentication secret to allow access to `ocs-registry:latest-4.7`
 - Waiting for 5 mins, you can monitor what's happening with:  
-`watch oc get nodes`
+```bash
+watch oc get nodes
+```
 - Install the ODF v4.7 Operator from template `roles/rbd_ceph_performance/templates/odfv47.yml`
