@@ -35,4 +35,4 @@ The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF o
 You need to be authenticated to get to quay.io/rhceph-dev
 [Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)
 ### ansible role taks
-[The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)
+![The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)
