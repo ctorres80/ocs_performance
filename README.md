@@ -55,6 +55,7 @@ watch oc get nodes
 
 
 `# 7 -> DEPLOY STRETCHED CLUSTER VMs: 3 AZs, Replica-4 (2 OSD nodes in 2 AZ + arbiter)     #`
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/5.png)
 Please check that you're in this condition before start:    
 ```bash
 oc get machineset -n openshift-machine-api
