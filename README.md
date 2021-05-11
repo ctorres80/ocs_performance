@@ -2,14 +2,6 @@
 - [Introduction](#Introduction)
 - [Requirements](#Requirements)
 - [Performance testing](#performance-testing)
-    - [Clone the repo](#clone-the-repo)
-    - [Fio testing](#fio-testing)
-    - [Running the fio benchmark pods](#running-the-fio-benchmark-pods)
-    - [Monitoring performance during benchmark](#monitoring-performance-during-benchmark)
-         - [Using Openshift Webconsole and grafana](#using-openshift-webconsole-and-grafana)
-         - [Using toolbox for cephrbd monitoring](#using-toolbox-for-cephrbd-monitoring)
-- [Cleaning environment](#cleaning-environment)
-    - [Delete all](#delete-all)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
