@@ -50,6 +50,9 @@ watch oc get nodes
 - If everything has been completed successfully you will see that the OCS Operator version 4.7 will be available 
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/3.png)
 
+
+
+
 `# 7 -> DEPLOY STRETCHED CLUSTER VMs: 3 AZs, Replica-4 (2 OSD nodes in 2 AZ + arbiter)     #`
 Please check that you're in this condition before start  
 ```bash
