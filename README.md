@@ -53,7 +53,7 @@ watch oc get nodes
 `# 7 -> DEPLOY STRETCHED CLUSTER VMs: 3 AZs, Replica-4 (2 OSD nodes in 2 AZ + arbiter)     #`
 Please check that you're in this condition before start  
 ```bash
-# oc get machineset -n openshift-machine-api
+oc get machineset -n openshift-machine-api
 ```
 ```
 NAME                                   DESIRED   CURRENT   READY   AVAILABLE   AGE
