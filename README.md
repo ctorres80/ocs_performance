@@ -111,29 +111,11 @@ ocs-worker-west-1b-g4ns7                     Running   m5.4xlarge   eu-west-1   
 ocs-worker-west-1b-vsfv6                     Running   m5.4xlarge   eu-west-1   eu-west-1b   5m31s
 ocs-worker-west-1c-z7dwp                     Running   m5.4xlarge   eu-west-1   eu-west-1c   5m30s
 ```
-
-
-TASK [rbd_ceph_performance : partitioning disks] *******************************************************************************************************************************************************************************************
-Tuesday 11 May 2021  15:28:34 +0000 (0:06:00.029)       0:17:29.501 ***********
-included: /home/ctorres-redhat.com/ocs_performance/roles/rbd_ceph_performance/tasks/partitioning.yml for localhost
-
-TASK [rbd_ceph_performance : Getting ODF workers from datacenter1] *************************************************************************************************************************************************************************
-Tuesday 11 May 2021  15:28:34 +0000 (0:00:00.062)       0:17:29.563 ***********
-changed: [localhost]
-
-TASK [rbd_ceph_performance : I will create 2 partitions per free DISK on servers in datacenter1] *******************************************************************************************************************************************
-Tuesday 11 May 2021  15:28:34 +0000 (0:00:00.431)       0:17:29.995 ***********
-
+After 6 minutes the playbook will try to partition the 4TB EBS in 2x2TB partitions, make sure that the playbook will return the following output per node (if it doesn't work you can run again the ansible role and try option #5 PARTITION)
+``
   msg:
   - NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
   - 'nvme1n1     259:0    0    4T  0 disk '
   - '|-nvme1n1p1 259:6    0    2T  0 part '
   - '`-nvme1n1p2 259:7    0    2T  0 part '
-  ...
-  TASK [rbd_ceph_performance : Getting ODF workers from datacenter2] *************************************************************************************************************************************************************************
-Tuesday 11 May 2021  15:29:45 +0000 (0:00:00.068)       0:18:40.346 ***********
-changed: [localhost]
-
-TASK [rbd_ceph_performance : I will create 2 partitions per free DISK on servers in datacenter2] *******************************************************************************************************************************************
-Tuesday 11 May 2021  15:29:45 +0000 (0:00:00.467)       0:18:40.813 ***********
-...
+```
