@@ -1,11 +1,14 @@
-# Synthetic benchmark tool for Block, File and S3 in OpenShift Data Foundation
+# Summary
 - [Introduction](#Introduction)
-- [Requirements](#Requirements)
+- [LAB Requirements](#Requirements)
 - [Performance testing](#performance-testing)
 - [OpenShift Data Foundation v4.7](#OpenShift-Data-Foundation-v47)
+   -  [Order your lab environment from RHPDS](#Order-your-lab-environment-from-RHPDS)
+   -  [Ansible role taks required](#Ansible-role-taks-required)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
+The ansible role includes OpenShift Data Foundation v4.7 Operator deployment and infrastructure provisioning for testing Metro stretched cluster.  
 If you already deployed an ODF cluster you can move to [Performance testing](#performance-testing)
 
 ## Requirements
@@ -31,8 +34,8 @@ kubeconfig: '$HOME/.kube/config'
 ## OpenShift Data Foundation v4.7
 The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF operator container image is:  
 `image: quay.io/rhceph-dev/ocs-registry:latest-4.7` 
-### Order your lab environment
+### Order your lab environment from RHPDS
 You need to be authenticated to get to quay.io/rhceph-dev
 ![Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)
-### ansible role taks
+### Ansible role taks required
 ![The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)
