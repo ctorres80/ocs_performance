@@ -28,3 +28,8 @@
 - debug:
     msg: "{{ item }}"
   loop: "{{ oc_get_nodes.stdout_lines }}"
+
+- name: Deployment of ODFv47 operator
+  shell:
+            cmd: |
+              oc apply -f roles/rbd_ceph_performance/templates/odfv47.yml
