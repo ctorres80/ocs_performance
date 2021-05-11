@@ -2,7 +2,7 @@
 - [Introduction](#Introduction)
 - [Requirements](#Requirements)
 - [Performance testing](#performance-testing)
-- [ODF v4.7](#ODF-v4.7)
+- [ODF v4.7](#odf-v4.7)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
