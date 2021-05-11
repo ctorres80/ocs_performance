@@ -5,6 +5,7 @@
 - [OpenShift Data Foundation v4.7](#OpenShift-Data-Foundation-v47)
    -  [Order your lab environment from RHPDS](#Order-your-lab-environment-from-RHPDS)
    -  [Ansible role taks required](#Ansible-role-taks-required)
+   -  [Deploy ODF v4.7](#Deploy-ODF-v47)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
@@ -114,7 +115,7 @@ ocs-worker-west-1b-g4ns7                     Running   m5.4xlarge   eu-west-1   
 ocs-worker-west-1b-vsfv6                     Running   m5.4xlarge   eu-west-1   eu-west-1b   5m31s
 ocs-worker-west-1c-z7dwp                     Running   m5.4xlarge   eu-west-1   eu-west-1c   5m30s
 ```
-After 6 minutes the playbook will try to partition the 4TB EBS in 2x2TB partitions, make sure that the playbook will return the following output per node (if it doesn't work you can run again the ansible role and try option #5 PARTITION)
+After 6 minutes the playbook will try to partition the 4TB EBS in 2x2TB partitions. Please make sure that the playbook will return the following output per node (if it doesn't work you can run again the ansible role and try option #5 PARTITION)
 ```
   msg:
   - NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
@@ -122,3 +123,11 @@ After 6 minutes the playbook will try to partition the 4TB EBS in 2x2TB partitio
   - '|-nvme1n1p1 259:6    0    2T  0 part '
   - '`-nvme1n1p2 259:7    0    2T  0 part '
 ```
+  
+  
+### Deploy ODF v4.7 Stretched Cluster
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/6.png)
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/7.png)
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/8.png)
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/9.png)
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/10.png)
