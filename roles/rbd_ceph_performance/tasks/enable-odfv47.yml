@@ -1,0 +1,30 @@
+- name: Getting the secret for registry authentication
+  shell:
+            cmd: |
+              oc get -n openshift-config secret/pull-secret -ojson  | jq -r '.data.".dockerconfigjson"' |  base64 -d | jq '.' > ./orig_secret.json
+
+- name: Change the secret keys for ceph-dev authentication
+  replace:
+    path: ./orig_secret.json
+    after: 'quay.io'
+    before: 'registry.redhat.io'
+    regexp: '\"auth.+'
+    replace: '"auth": "cmhvY3MtZW5nOjhRZVUvbDdqL0lLTk9aMEtidU5OYVlHbjdWUmNnVkxlMURrODB2OUhza05VMk4rSWZtNGYxYmJDQVZZMHJObks="'
+
+- name: changing the secret, it will take some time
+  shell:
+            cmd: |
+              oc set data secret/pull-secret -n openshift-config --from-file=./orig_secret.json
+
+- name: Pause for 5 minutes, in the meanwhile you can monitor with watch oc get nodes
+  pause:
+    minutes: 5
+
+- name: Node status
+  shell: |
+         oc get nodes
+  register: oc_get_nodes
+
+- debug:
+    msg: "{{ item }}"
+  loop: "{{ oc_get_nodes.stdout_lines }}"

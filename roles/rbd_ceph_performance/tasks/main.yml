@@ -17,8 +17,9 @@
           # 3 -> S3CMD: Data ingestion on cephfs pvc then s3cmd sync to MCG buckets                 #
           # 4 -> PVC CREATE: Create an INPUT number of pvcs based on user INPUT                     #
           # 5 -> PARTITION OSDs on nodes with label: cluster.ocs.openshift.io/openshift-storage=    #
-          # 6 -> DEPLOY STRETCHED CLUSTER INFRA: 3 AZ, Replica-4 (2 OSD nodes in 2 AZ + arbiter     #
-          # 7 -> HA TEST STRETCHED CLUSTER                                                          #
+          # 6 -> DEPLOY STRETCHED CLUSTER VMs: 3 AZs, Replica-4 (2 OSD nodes in 2 AZ + arbiter)     #
+          # 7 -> Install ODF v4.7 RC operator (tag latest)                                          #
+          # 8 -> HA TEST STRETCHED CLUSTER (requires ODF v4.7)                                      #
           ###########################################################################################
   register: benchmark
 
@@ -46,6 +47,10 @@
   include_tasks: prepare-machinesets-stretched.yaml
   when: benchmark.user_input == "6"
 
+- name: Install ODF v4.7
+  include_tasks: enable-odfv47.yml
+  when: benchmark.user_input == "7"
+
 - name: HA test stretched cluster
   include_tasks: ha_test.yml
-  when: benchmark.user_input == "7"
+  when: benchmark.user_input == "8"
