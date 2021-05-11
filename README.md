@@ -52,8 +52,8 @@ watch oc get nodes
 - Install the ODF v4.7 Operator from template `roles/rbd_ceph_performance/templates/odfv47.yml`
 - If everything has been completed successfully you will see that the OCS Operator version 4.7 will be available 
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/4.png)
-
-
+  
+  
 `# 7 -> DEPLOY STRETCHED CLUSTER VMs: 3 AZs, Replica-4 (2 OSD nodes in 2 AZ + arbiter)     #`
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/5.png)
 Please check that you're in this condition before start:    
@@ -66,7 +66,6 @@ cluster-c1f4-kpw7v-worker-eu-west-1a   1         1         1       1           8
 cluster-c1f4-kpw7v-worker-eu-west-1b   1         1         1       1           8d
 cluster-c1f4-kpw7v-worker-eu-west-1c   1         1         1       1           8d
 ```
-Select the option #7  
 The tasks will take cluster configuration and automatically create the yaml for ocs machinesets. The final result will be 3 new machinesets:
 - all the vms are using instance type: m5.4xlarge
 - 2 vms will be create in AZ with label `datacenter1`
