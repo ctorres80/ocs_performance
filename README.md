@@ -40,7 +40,6 @@ The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF o
 ![Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)
 ### Ansible role taks required
 ![The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)
-Option #6 will execute the following taks:  
 `# 6 -> Install ODF v4.7 RC operator (tag latest-4.7)                                      #`  
 - Replace the token authentication secret to allow access to `ocs-registry:latest-4.7`
 - Waiting for 5 mins, you can monitor what's happening with:  
