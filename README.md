@@ -141,4 +141,17 @@ for i in {1..2}; do oc get nodes -l topology.kubernetes.io/zone=datacenter$i -o 
   
   
 ### Scale capacity in ODF v4.7
-Y
+Before add capacity please check that you have 4x2TB pvs available
+
+```bash
+oc get pv | grep Available
+```
+```
+local-pv-57445269                          2047Gi     RWO            Delete           Available                                                              localblock                             16h
+local-pv-5b1e6c5b                          2047Gi     RWO            Delete           Available                                                              localblock                             16h
+local-pv-65f7ae73                          2047Gi     RWO            Delete           Available                                                              localblock                             16h
+local-pv-e873ba1d                          2047Gi     RWO            Delete           Available                                                              localblock                             16h
+```
+  
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/13.png)
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/14.png)
