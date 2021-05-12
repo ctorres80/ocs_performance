@@ -6,7 +6,7 @@
    -  [Order your lab environment from RHPDS](#Order-your-lab-environment-from-RHPDS)
    -  [Ansible role taks required](#Ansible-role-taks-required)
    -  [Deploy ODF v4.7 Stretched Cluster](#Deploy-ODF-v47-Stretched-Cluster)
-   -  [Scale capacity in ODF v4.7](#Scale-capacity-in-ODF -v47)
+   -  [Scale capacity in ODF v4.7](#Scale-capacity-in-ODF-v47)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
@@ -155,3 +155,47 @@ local-pv-e873ba1d                          2047Gi     RWO            Delete     
   
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/13.png)
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/14.png)
+
+
+```
+sh-4.4# ceph osd tree
+ID  CLASS WEIGHT   TYPE NAME                       STATUS REWEIGHT PRI-AFF
+ -1       10.00000 root default
+ -5       10.00000     region eu-west-1
+ -4        6.00000         zone datacenter1
+ -3        4.00000             host ip-10-0-151-30
+  1   ssd  2.00000                 osd.1               up  1.00000 1.00000
+  5   ssd  2.00000                 osd.5               up  1.00000 1.00000
+-13        2.00000             host ip-10-0-158-55
+  3   ssd  2.00000                 osd.3               up  1.00000 1.00000
+-10        4.00000         zone datacenter2
+-15        2.00000             host ip-10-0-170-28
+  2   ssd  2.00000                 osd.2               up  1.00000 1.00000
+ -9        2.00000             host ip-10-0-190-23
+  0   ssd  2.00000                 osd.0               up  1.00000 1.00000
+  4              0 osd.4                             down        0 1.00000
+  6              0 osd.6                             down        0 1.00000
+  7              0 osd.7                             down        0 1.00000
+  
+
+  ID  CLASS WEIGHT   TYPE NAME                       STATUS REWEIGHT PRI-AFF
+ -1	  16.00000 root default
+ -5	  16.00000     region eu-west-1
+ -4        8.00000         zone datacenter1
+ -3        4.00000             host ip-10-0-151-30
+  1   ssd  2.00000                 osd.1               up  1.00000 1.00000
+  5   ssd  2.00000                 osd.5               up  1.00000 1.00000
+-13        4.00000             host ip-10-0-158-55
+  3   ssd  2.00000                 osd.3               up  1.00000 1.00000
+  7   ssd  2.00000                 osd.7               up  1.00000 1.00000
+-10        8.00000         zone datacenter2
+-15        4.00000             host ip-10-0-170-28
+  2   ssd  2.00000                 osd.2               up  1.00000 1.00000
+  6   ssd  2.00000                 osd.6               up  1.00000 1.00000
+ -9        4.00000             host ip-10-0-190-23
+  0   ssd  2.00000                 osd.0               up  1.00000 1.00000
+  4   ssd  2.00000                 osd.4               up  1.00000 1.00000  
+  ```
+  
+
+ ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/15.png)
