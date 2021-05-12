@@ -206,4 +206,6 @@ At the end you will get
   
 ## Storage site failure simulation  
 Is recommended to configure storage classs `ocs-storagecluster-ceph-rbd` as default storage class.  
-You can deploy whatever stateful application that consume ODF persistent volume claims. In our example we are going to use pgbench with 4 parallel DBs.
+You can deploy whatever stateful application that consume ODF persistent volume claims. In our example we are going to use pgbench with 4 parallel DBs.  
+You can follow the video for a quick demo
+[![Watch the video](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/site_failure_demo.png)](https://youtu.be/DpyakXQjZq4?t=1138)
