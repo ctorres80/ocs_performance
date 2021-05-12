@@ -6,6 +6,7 @@
    -  [Order your lab environment from RHPDS](#Order-your-lab-environment-from-RHPDS)
    -  [Ansible role taks required](#Ansible-role-taks-required)
    -  [Deploy ODF v4.7 Stretched Cluster](#Deploy-ODF-v47-Stretched-Cluster)
+   -  [Scale capacity in ODF v4.7](#Scale-capacity-in-ODF -v47)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
@@ -82,7 +83,7 @@ Pausing for 360 seconds
 (ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
 ```
 
-You can open a new shell and verify if the new machinesets and machines are privisioned/running
+You can open a new shell and verify if the new machinesets and machines are provisioned/running
 ```bash
 watch oc get machines -n openshift-machine-api
 ```
@@ -116,6 +117,10 @@ ocs-worker-west-1b-vsfv6                     Running   m5.4xlarge   eu-west-1   
 ocs-worker-west-1c-z7dwp                     Running   m5.4xlarge   eu-west-1   eu-west-1c   5m30s
 ```
 After 6 minutes the playbook will try to partition the 4TB EBS in 2x2TB partitions. Please make sure that the playbook will return the following output per node (if it doesn't work you can run again the ansible role and try option #5 PARTITION)
+```bash
+for i in {1..2}; do oc get nodes -l topology.kubernetes.io/zone=datacenter$i -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | while read node; do oc debug node/$node -- lsblk; done; done
+```
+
 ```
   msg:
   - NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
@@ -133,3 +138,7 @@ After 6 minutes the playbook will try to partition the 4TB EBS in 2x2TB partitio
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/10.png)
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/11.png)
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/12.png)
+  
+  
+### Scale capacity in ODF v4.7
+Y
