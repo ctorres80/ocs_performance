@@ -4,9 +4,10 @@
 - [Performance testing](#performance-testing)
 - [OpenShift Data Foundation v4.7](#OpenShift-Data-Foundation-v47)
    -  [Order your lab environment from RHPDS](#Order-your-lab-environment-from-RHPDS)
-   -  [Deploy 4 OSD nodes in  2 AZs with 3rd AZ and an arbiter node](#Deploy-4-OSD-nodes-in-2-AZs-with-3rd-AZ-and-an-arbiter-node)
+   -  [Deploy 4 OSD nodes in  2 AZs with 3rd AZ and an arbiter node](#Deploy-4-OSD-nodes-in-2-AZs-with-3rd-AZ-with-an-arbiter-node)
    -  [Deploy ODF v4.7 Stretched Cluster](#Deploy-ODF-v47-Stretched-Cluster)
    -  [Scale capacity in ODF v4.7](#Scale-capacity-in-ODF-v47)
+   -  [Storage site failure simulation](#Storage-site-failure-simulation)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
@@ -40,7 +41,7 @@ The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF o
 `image: quay.io/rhceph-dev/ocs-registry:latest-4.7` 
 ### Order your lab environment from RHPDS
 ![Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)
-### Deploy 4 OSD nodes in  2 AZs with 3rd AZ and an arbiter node
+### Deploy 4 OSD nodes in  2 AZs with 3rd AZ with an arbiter node
 ![The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)
   
   
@@ -155,10 +156,12 @@ local-pv-e873ba1d                          2047Gi     RWO            Delete     
   
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/13.png)
 ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/14.png)
-
-
+  
+If you're using the toolbox (not supported) you can connect to the ceph cluster and check the scalability with:
 ```
-sh-4.4# ceph osd tree
+watch ceph osd tree
+```
+```
 ID  CLASS WEIGHT   TYPE NAME                       STATUS REWEIGHT PRI-AFF
  -1       10.00000 root default
  -5       10.00000     region eu-west-1
@@ -195,7 +198,12 @@ ID  CLASS WEIGHT   TYPE NAME                       STATUS REWEIGHT PRI-AFF
  -9        4.00000             host ip-10-0-190-23
   0   ssd  2.00000                 osd.0               up  1.00000 1.00000
   4   ssd  2.00000                 osd.4               up  1.00000 1.00000  
-  ```
+```
   
-
- ![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/15.png)
+At the end you will get 
+![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/15.png)
+  
+  
+## Storage site failure simulation  
+Is recommended to configure storage classs `ocs-storagecluster-ceph-rbd` as default storage class.  
+You can deploy whatever stateful application that consume ODF persistent volume claims. In our example we are going to use pgbench with 4 parallel DBs.
