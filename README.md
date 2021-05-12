@@ -4,7 +4,7 @@
 - [Performance testing](#performance-testing)
 - [OpenShift Data Foundation v4.7](#OpenShift-Data-Foundation-v47)
    -  [Order your lab environment from RHPDS](#Order-your-lab-environment-from-RHPDS)
-   -  [Ansible role taks required](#Ansible-role-taks-required)
+   -  [Deploy 4 OSD nodes in  2 AZs with 3rd AZ and an arbiter node](#Deploy-4-OSD-nodes-in-2-AZs-with-3rd-AZ-and-an-arbiter-node)
    -  [Deploy ODF v4.7 Stretched Cluster](#Deploy-ODF-v47-Stretched-Cluster)
    -  [Scale capacity in ODF v4.7](#Scale-capacity-in-ODF-v47)
 
@@ -40,7 +40,7 @@ The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF o
 `image: quay.io/rhceph-dev/ocs-registry:latest-4.7` 
 ### Order your lab environment from RHPDS
 ![Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)
-### Ansible role taks required
+### Deploy 4 OSD nodes in  2 AZs with 3rd AZ and an arbiter node
 ![The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)
   
   
