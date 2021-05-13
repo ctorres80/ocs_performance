@@ -14,7 +14,7 @@
 - name: changing the secret, it will take some time
   shell:
             cmd: |
-              oc set data secret/pull-secret -n openshift-config --from-file=./orig_secret.json
+              oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=./orig_secret.json
 
 - name: Pause for 5 minutes, in the meanwhile you can monitor with watch oc get nodes
   pause:
