@@ -23,7 +23,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     state: absent
     regexp: '^          - ebs'
-  when: not item | string is search ("1c")
+  when: not item | string is search ("1c") or not item | string is search ("2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: delete replicas for osd nodes
@@ -31,7 +31,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     state: absent
     regexp: '^  replicas:'
-  when: not item | string is search ("1c")
+  when: not item | string is search ("1c") or not item | string is search ("2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add deviceName
@@ -47,7 +47,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertbefore: '^  selector:'
     line: '  replicas: 2'
-  when: not item | string is search ("1c")
+  when: item | string is search ("1a") or item | string is search ("2a") or item | string is search ("1b") or item | string is search ("2b")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add EBS
@@ -55,7 +55,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertafter: '^          - deviceName: /dev/sdc'
     line: '            ebs:'
-  when: not item | string is search ("1c")
+  when: not item | string is search ("1c") or not item | string is search ("2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add EBS size {{ ebs_size }}
@@ -80,7 +80,7 @@
               labels:
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ zone_1 }}
-  when: item | string is search ("1a")
+  when: item | string is search ("1a") or item | string is search ("2a")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add ocs labels to OSD nodes to zone_2
@@ -97,7 +97,7 @@
               labels:
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ zone_2 }}
-  when: item | string is search ("1b")
+  when: item | string is search ("1b") or item | string is search ("2b")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add ocs labels to arbiter zone
@@ -110,7 +110,7 @@
               labels:
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ arbiter }}
-  when: item | string is search ("1c")
+  when: item | string is search ("1c") or item | string is search ("2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Create machinesets and replicas
@@ -132,3 +132,4 @@
     state: absent
   with_fileglob:
     - "./*.yaml"
+    
