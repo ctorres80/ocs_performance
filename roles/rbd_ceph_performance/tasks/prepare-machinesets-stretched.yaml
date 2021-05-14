@@ -31,7 +31,6 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     state: absent
     regexp: '^  replicas:'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add deviceName
@@ -39,7 +38,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertafter: '^          blockDevices:'
     line: '          - deviceName: /dev/sdc'
-  when: not item | string is search ("1c")
+  when: not item | string is search ("1c") or not item | string is search ("2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: replica 2 for OSD nodes
@@ -48,6 +47,14 @@
     insertbefore: '^  selector:'
     line: '  replicas: 2'
   when: item | string is search ("1a") or item | string is search ("2a") or item | string is search ("1b") or item | string is search ("2b")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: replica 1 for arbiter nodes
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    insertbefore: '^  selector:'
+    line: '  replicas: 1'
+  when: item | string is search ("1c") or item | string is search ("2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add EBS
@@ -132,4 +139,3 @@
     state: absent
   with_fileglob:
     - "./*.yaml"
-    
