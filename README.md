@@ -116,6 +116,7 @@ When partitions are created the playbook will take 3 minutes to deploy:
   - LSO auto-discovery
   - LSO local-deviceset  
   - Create the pvs  
+
 Check the available pvs with:  
 ```bash
 watch oc get pv
