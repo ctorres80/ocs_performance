@@ -6,8 +6,6 @@
    -  [Order your lab environment from RHPDS](#Order-your-lab-environment-from-RHPDS)
    -  [Deploy 4 OSD nodes in  2 AZs with 3rd AZ and an arbiter node](#Deploy-4-OSD-nodes-in-2-AZs-with-3rd-AZ-with-an-arbiter-node)
    -  [Deploy ODF v4.7 Stretched Cluster](#Deploy-ODF-v47-Stretched-Cluster)
-   -  [Scale capacity in ODF v4.7](#Scale-capacity-in-ODF-v47)
-   -  [Storage site failure simulation](#Storage-site-failure-simulation)
 
 ## Introduction 
 This is in an interactive ansible role for performance testing with synthetic benchmarking workloads, the purpose is to simulate different workload profiles based on your inputs for BLock, File and S3 OBC in OpenShift Data Foundation.  
@@ -40,26 +38,11 @@ kubeconfig: '$HOME/.kube/config'
 The OpenShift Data Foundation deployment is based on version 4.7 (RC), the ODF operator container image is:  
 `image: quay.io/rhceph-dev/ocs-registry:latest-4.7` 
 ### Order your lab environment from RHPDS
-![Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)
-### Deploy 4 OSD nodes in  2 AZs with 3rd AZ with an arbiter node
-![The following tasks must be used](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png)
+![Order the lab from RHPDS](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/1.png)  
   
+### Deploy ODF v4.7 Stretched Cluster  
   
-`# 6 -> Install ODF v4.7 RC operator (tag latest-4.7)                                      #`  
-![Install ODF v4.7 RC operator](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/3.png)
-- Replace the token authentication secret to allow access to `ocs-registry:latest-4.7`
-- Waiting for 5 mins, you can monitor what's happening with:  
-```bash
-watch oc get nodes
-```
-- Install the ODF v4.7 Operator from template `roles/rbd_ceph_performance/templates/odfv47.yml`
-- If everything has been completed successfully you will see that the OCS Operator version 4.7 will be available 
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/4.png)
-  
-  
-`# 7 -> DEPLOY STRETCHED CLUSTER VMs: 3 AZs, Replica-4 (2 OSD nodes in 2 AZ + arbiter)     #`
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/5.png)
-Please check that you're in this condition before start:    
+Please check that you're in this condition before start (the output could be different based on your AWS region):    
 ```bash
 oc get machineset -n openshift-machine-api
 ```
@@ -128,82 +111,17 @@ for i in {1..2}; do oc get nodes -l topology.kubernetes.io/zone=datacenter$i -o 
   - 'nvme1n1     259:0    0    4T  0 disk '
   - '|-nvme1n1p1 259:6    0    2T  0 part '
   - '`-nvme1n1p2 259:7    0    2T  0 part '
-```
-  
-  
-### Deploy ODF v4.7 Stretched Cluster
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/6.png)
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/7.png)
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/8.png)
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/9.png)
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/10.png)
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/11.png)
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/12.png)
-  
-  
-### Scale capacity in ODF v4.7
-Before add capacity please check that you have 4x2TB pvs available
-
+```  
+When partitions are created the playbook will take 3 minutes to deploy:
+  - LSO auto-discovery
+  - LSO local-deviceset  
+  - Create the pvs  
+Check the available pvs with:  
 ```bash
-oc get pv | grep Available
+watch oc get pv
 ```
-```
-local-pv-57445269                          2047Gi     RWO            Delete           Available                                                              localblock                             16h
-local-pv-5b1e6c5b                          2047Gi     RWO            Delete           Available                                                              localblock                             16h
-local-pv-65f7ae73                          2047Gi     RWO            Delete           Available                                                              localblock                             16h
-local-pv-e873ba1d                          2047Gi     RWO            Delete           Available                                                              localblock                             16h
-```
-  
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/13.png)
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/14.png)
-  
-If you're using the toolbox (not supported) you can connect to the ceph cluster and check the scalability with:
-```
-watch ceph osd tree
-```
-```
-ID  CLASS WEIGHT   TYPE NAME                       STATUS REWEIGHT PRI-AFF
- -1       10.00000 root default
- -5       10.00000     region eu-west-1
- -4        6.00000         zone datacenter1
- -3        4.00000             host ip-10-0-151-30
-  1   ssd  2.00000                 osd.1               up  1.00000 1.00000
-  5   ssd  2.00000                 osd.5               up  1.00000 1.00000
--13        2.00000             host ip-10-0-158-55
-  3   ssd  2.00000                 osd.3               up  1.00000 1.00000
--10        4.00000         zone datacenter2
--15        2.00000             host ip-10-0-170-28
-  2   ssd  2.00000                 osd.2               up  1.00000 1.00000
- -9        2.00000             host ip-10-0-190-23
-  0   ssd  2.00000                 osd.0               up  1.00000 1.00000
-  4              0 osd.4                             down        0 1.00000
-  6              0 osd.6                             down        0 1.00000
-  7              0 osd.7                             down        0 1.00000
-  
+If the pvs created are 8 pvs then it will continue to deploy ODF Metro Stretched cluster  
 
-  ID  CLASS WEIGHT   TYPE NAME                       STATUS REWEIGHT PRI-AFF
- -1	  16.00000 root default
- -5	  16.00000     region eu-west-1
- -4        8.00000         zone datacenter1
- -3        4.00000             host ip-10-0-151-30
-  1   ssd  2.00000                 osd.1               up  1.00000 1.00000
-  5   ssd  2.00000                 osd.5               up  1.00000 1.00000
--13        4.00000             host ip-10-0-158-55
-  3   ssd  2.00000                 osd.3               up  1.00000 1.00000
-  7   ssd  2.00000                 osd.7               up  1.00000 1.00000
--10        8.00000         zone datacenter2
--15        4.00000             host ip-10-0-170-28
-  2   ssd  2.00000                 osd.2               up  1.00000 1.00000
-  6   ssd  2.00000                 osd.6               up  1.00000 1.00000
- -9        4.00000             host ip-10-0-190-23
-  0   ssd  2.00000                 osd.0               up  1.00000 1.00000
-  4   ssd  2.00000                 osd.4               up  1.00000 1.00000  
-```
-  
-At the end you will get 
-![OCS v4.7](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/15.png)
-  
-  
 ## Storage site failure simulation  
 Is recommended to configure storage classs `ocs-storagecluster-ceph-rbd` as default storage class.  
 You can deploy whatever stateful application that consume ODF persistent volume claims. In our example we are going to use pgbench with 4 parallel DBs.  
