@@ -2,12 +2,24 @@
 - pause:
     prompt: |
           ###########################################################################################
-          # Tasks 1,2,3,4 the playbook automate the following taks:                                 #
+          # Tasks 1,3,4 the playbook automate the following taks:                                   #
           #   - Create project: testing-ocs-storage                                                 #
+          # Task 1:                                                                                 #
           #   - Deploy fio-performance-testing statefulset                                          #
           #   - Scale the statefulset to a number of pods based on user INPUT                       #
           #   - Testing the workload profiles based on fio interactive INPUT                        #
           #   - When the benchmark is finished it takes care to clean the test environment          #
+          # Task 2:                                                                                 #
+          #   - Create pgbench #namespaces based on user input                                      #
+          #   - Initialize DB sampledb on each pgbench project                                      #
+          #   - Running pgbench in parallel in all the previous created DBs                         #
+          # Task 3:                                                                                 #
+          #   - Similar to task 1 but the pod has 2 containers: fio and s3cmd:                      #
+          #     - fio: used for ingestion with a cephfs pvc                                         #
+          #     - s3cmd: used for s3cmd sync, based on previous ingestion of objects                #
+          # Task 4:                                                                                 #
+          #   - It will create a number of pvcs on ODF based on user input                          #
+          #   - pvcs will be deleted at the end of the test                                         #
           # Task 5 is used when you need to create 2 partitions disk on OCS labeled nodes           #
           # Task 6 is to fully automate ODF cluster based on:                                       #
           #   - LSO Opearator for local storage with auto-discovery                                 #
