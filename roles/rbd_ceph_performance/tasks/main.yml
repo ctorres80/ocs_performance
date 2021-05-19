@@ -27,7 +27,7 @@
           #   - 3 AZ: datacenter1, datacenter2, arbiter                                             #
           #     - datacenter1: 2 OSD nodes with 4TB partitioned in 2x2TB                            #
           #     - datacenter2: 2 OSD nodes with 4TB partitioned in 2x2TB                            #
-          #     - arbiter: 1 nodes as arbiter node                                                  #
+          #     - arbiter: 1 node as arbiter for ODF Metro Cluster                                  #
           #     - Deploy ODF v4.7.0 cluster by using CR on the provisioned infrastrcture            #
           ###########################################################################################
 
