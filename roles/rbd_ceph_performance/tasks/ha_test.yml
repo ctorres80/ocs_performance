@@ -23,7 +23,8 @@
 
 - name: "nodes to shutdown in zone2"
   shell: |
-          oc get nodes -l topology.kubernetes.io/zone={{ zone_2 }} -o  jsonpath='{range .items[*]}{.spec.providerID}{"\n"}{end}'  | awk -F/ '{print $NF}'
+          az=$(oc get nodes -l topology.kubernetes.io/zone=datacenter2 -o jsonpath='{range .items[*]}{.metadata.labels.topology\.ebs\.csi\.aws\.com\/zone}{"\n"}{end}' | sort -u)
+          oc get nodes -l topology.ebs.csi.aws.com/zone=$az -o jsonpath='{range .items[*]}{.spec.providerID}{"\n"}{end}'  | awk -F/ '{print $NF}'
   register: nodes_to_shutdown
 
 - name: "nodes to shutdown"
@@ -43,7 +44,7 @@
          aws ec2 stop-instances --instance-ids {{ item }}
   loop: "{{ nodes_to_shutdown.stdout_lines }}"
 
-- name: Pause for 1 minutes before restart
+- name: Pause for 1 minute
   pause:
     minutes: 1
 
@@ -55,9 +56,9 @@
   debug:
     var: nodes_status.stdout_lines
 
-- name: Pause for 5 minutes before restart
+- name: Pause for 10 minutes before restart
   pause:
-    minutes: 5
+    minutes: 15
 
 - name: "Restart {{ zone_2 }} nodes"
   shell: |
