@@ -98,10 +98,11 @@ ocs-worker-west-1b-vsfv6                     Running   m5.4xlarge   eu-west-1   
 ocs-worker-west-1c-z7dwp                     Running   m5.4xlarge   eu-west-1   eu-west-1c   5m30s
 ```
 After 6 minutes the playbook will try to partition the 4TB EBS in 2x2TB partitions. Please make sure that the playbook will return the following output per node (if it doesn't work you can run again the ansible role and try option #5 PARTITION)
+![ODF deployment](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/4.png) 
 ```bash
 for i in {1..2}; do oc get nodes -l topology.kubernetes.io/zone=datacenter$i -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | while read node; do oc debug node/$node -- lsblk; done; done
 ```
-
+![ODF deployment](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/5.png) 
 ```
   msg:
   - NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
