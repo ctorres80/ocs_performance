@@ -87,6 +87,7 @@
               labels:
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ zone_1 }}
+                cluster.ocs.openshift.io/openshift-storages: ""
   when: item | string is search ("1a") or item | string is search ("2a")
   loop: "{{ machinesets.stdout_lines }}"
 
@@ -104,6 +105,7 @@
               labels:
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ zone_2 }}
+                cluster.ocs.openshift.io/openshift-storages: ""
   when: item | string is search ("1b") or item | string is search ("2b")
   loop: "{{ machinesets.stdout_lines }}"
 
