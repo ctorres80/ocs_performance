@@ -59,6 +59,8 @@ The tasks will take cluster configuration and automatically create the yaml for 
 - Each of the above instances are configured to use 4TB EBS volume that will be partioned with 2x2TB partitions
 - 1 vms will be deployed in a 3rd AZ with label `arbiter`
 
+![ODF deployment](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png) 
+
 There will be a pause of 6 mins, just the time to get the new instances up&running  
 ```
 TASK [rbd_ceph_performance : Pause for 6 minutes to provisioning machines] *******************************************************************************
