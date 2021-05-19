@@ -62,12 +62,7 @@ The tasks will take cluster configuration and automatically create the yaml for 
 ![ODF deployment](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png) 
 
 There will be a pause of 6 mins, just the time to get the new instances up&running  
-```
-TASK [rbd_ceph_performance : Pause for 6 minutes to provisioning machines] *******************************************************************************
-Tuesday 11 May 2021  15:22:34 +0000 (0:00:02.585)       0:11:29.471 ***********
-Pausing for 360 seconds
-(ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
-```
+![ODF deployment](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/3.png) 
 
 You can open a new shell and verify if the new machinesets and machines are provisioned/running
 ```bash
