@@ -2,12 +2,21 @@
 - pause:
     prompt: |
           ###########################################################################################
-          # The playbook automate the following taks:                                               #
-          # - Create project: testing-ocs-storage                                                   #
-          # - Deploy fio-performance-testing statefulset                                            #
-          # - Scale the statefulset to a number of pods based on user INPUT                         #
-          # - Testing the workload profiles based on fio interactive INPUT                          #
-          # - When the benchmark is finished it takes care to clean the test environment            #
+          # Tasks 1,2,3,4 the playbook automate the following taks:                                 #
+          #   - Create project: testing-ocs-storage                                                 #
+          #   - Deploy fio-performance-testing statefulset                                          #
+          #   - Scale the statefulset to a number of pods based on user INPUT                       #
+          #   - Testing the workload profiles based on fio interactive INPUT                        #
+          #   - When the benchmark is finished it takes care to clean the test environment          #
+          # Task 5 is used when you need to create 2 partitions disk on OCS labeled nodes           #
+          # Task 6 is to fully automate ODF cluster based on:                                       #
+          #   - LSO Opearator for local storage with auto-discovery                                 #
+          #   - ODF v4.7.0 Operator (from Official openshift OperatorHub)                           #
+          #   - 3 AZ: datacenter1, datacenter2, arbiter                                             #
+          #     - datacenter1: 2 OSD nodes with 4TB partitioned in 2x2TB                            #
+          #     - datacenter2: 2 OSD nodes with 4TB partitioned in 2x2TB                            #
+          #     - arbiter: 1 nodes as arbiter node                                                  #
+          #     - Deploy ODF v4.7.0 cluster by using CR on the provisioned infrastrcture            #
           ###########################################################################################
 
           ###########################################################################################
