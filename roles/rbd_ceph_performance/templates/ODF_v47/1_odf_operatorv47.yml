@@ -26,44 +26,6 @@ spec:
   source: redhat-operators
   sourceNamespace: openshift-marketplace
 ---
-apiVersion: local.storage.openshift.io/v1alpha1
-kind: LocalVolumeDiscovery
-metadata:
-  name: auto-discover-devices
-  namespace: openshift-local-storage
-spec:
-  nodeSelector:
-    nodeSelectorTerms:
-      - matchExpressions:
-        - key: cluster.ocs.openshift.io/openshift-storage
-          operator: In
-          values:
-            - ""
----
-apiVersion: local.storage.openshift.io/v1alpha1
-kind: LocalVolumeSet
-metadata:
-  name: local-block
-  namespace: openshift-local-storage
-spec:
-  nodeSelector:
-    nodeSelectorTerms:
-      - matchExpressions:
-          - key: cluster.ocs.openshift.io/openshift-storage
-            operator: In
-            values:
-              - ""
-  storageClassName: localblock
-  volumeMode: Block
-  fstype: ext4
-  maxDeviceCount: 1
-  deviceInclusionSpec:
-    deviceTypes:
-    - disk
-    - part
-    deviceMechanicalProperties:
-    - NonRotational
----
 apiVersion: v1
 kind: Namespace
 metadata:

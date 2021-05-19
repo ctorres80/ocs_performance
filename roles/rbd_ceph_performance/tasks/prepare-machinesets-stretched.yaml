@@ -1,4 +1,9 @@
 ---
+- name: Install LSO and OCS operators
+  shell:
+            cmd: |
+             oc create -f roles/rbd_ceph_performance/templates/ODF_v47/1_odf_operatorv47.yml
+  ignore_errors: true
 - name: Collect the machinesets names
   shell:
             cmd: |
@@ -87,7 +92,7 @@
               labels:
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ zone_1 }}
-                cluster.ocs.openshift.io/openshift-storages: ""
+                cluster.ocs.openshift.io/openshift-storage: ""
   when: item | string is search ("1a") or item | string is search ("2a")
   loop: "{{ machinesets.stdout_lines }}"
 
@@ -105,7 +110,7 @@
               labels:
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ zone_2 }}
-                cluster.ocs.openshift.io/openshift-storages: ""
+                cluster.ocs.openshift.io/openshift-storage: ""
   when: item | string is search ("1b") or item | string is search ("2b")
   loop: "{{ machinesets.stdout_lines }}"
 
@@ -135,9 +140,15 @@
 - name: partitioning disks
   include_tasks: partitioning.yml
 
+- name: Install LSO and OCS operators
+  shell:
+            cmd: |
+             oc create -f roles/rbd_ceph_performance/templates/ODF_v47/2_odf_operatorv47.yml
+  ignore_errors: true
+
 - name: Delete yaml files
   file:
     path: "{{ item }}"
     state: absent
   with_fileglob:
-    - "./*.yaml"
+    - "*.yaml"
