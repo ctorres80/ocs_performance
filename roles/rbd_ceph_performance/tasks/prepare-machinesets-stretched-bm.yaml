@@ -13,7 +13,7 @@
 - name: Export the machinesets in yaml files
   shell:
             cmd: |
-                    oc -n {{ machineset_project }} get machinesets {{ item }} -o yaml | sed -e 's/{{ item }}/ocs-worker-{{ item.split('-')[5:8] | join('-') }}/g' | sed -e 's/{{ oldinstancetype }}/{{ instancetype }}/g' > ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+                    oc -n {{ machineset_project }} get machinesets {{ item }} -o yaml | sed -e 's/{{ item }}/ocs-worker-{{ item.split('-')[5:8] | join('-') }}/g' > ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Configure label in nodes
@@ -21,14 +21,6 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     state: absent
     regexp: '^      metadata: {}'
-  loop: "{{ machinesets.stdout_lines }}"
-
-- name: delete default EBS
-  lineinfile:
-    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
-    state: absent
-    regexp: '^          - ebs'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: delete replicas for osd nodes
@@ -43,7 +35,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     state: absent
     regexp: '^          instanceType:'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
+  when: item | string is search ("1a") or item | string is search ("2a") or item | string is search ("1b") or item | string is search ("2b")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: create BM instanceType
@@ -51,15 +43,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertbefore: '^          kind: AWSMachineProviderConfig'
     line: '          instanceType: {{ bm_instance }}'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
-  loop: "{{ machinesets.stdout_lines }}"
-
-- name: Add deviceName
-  lineinfile:
-    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
-    insertafter: '^          blockDevices:'
-    line: '          - deviceName: /dev/sdc'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
+  when: item | string is search ("1a") or item | string is search ("2a") or item | string is search ("1b") or item | string is search ("2b")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: replica 2 for OSD nodes
@@ -76,22 +60,6 @@
     insertbefore: '^  selector:'
     line: '  replicas: 1'
   when: item | string is search ("1c") or item | string is search ("2c")
-  loop: "{{ machinesets.stdout_lines }}"
-
-- name: Add EBS
-  lineinfile:
-    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
-    insertafter: '^          - deviceName: /dev/sdc'
-    line: '            ebs:'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
-  loop: "{{ machinesets.stdout_lines }}"
-
-- name: Add EBS size {{ ebs_size }}
-  lineinfile:
-    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
-    regexp: '^              volumeSize: .+'
-    line: '              volumeSize: {{ ebs_size }}'
-  when: not item | string is search ("1c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add ocs labels to OSD nodes to zone1
