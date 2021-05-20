@@ -30,3 +30,5 @@ home_user: "{{ ansible_env.HOME }}"
 zone_1: 'datacenter1'
 zone_2: 'datacenter2'
 arbiter: 'arbiter'
+# Bare metal AWS instance
+bm_instance: 'i3.8xlarge'
