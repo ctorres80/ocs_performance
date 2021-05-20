@@ -178,6 +178,10 @@
                  oc create -f roles/rbd_ceph_performance/templates/ODF_v47/3_odf_cluster.yml
   when: pvs.stdout | string == "8"
 
+- name: Pause for 2 minutes to provisioning ODF pods
+  pause:
+    minutes: 2
+
 - command: oc -n openshift-storage get pod -l name=ocs-operator -o jsonpath='{range .items[*]}{.status.containerStatuses[0].ready}{"\n"}{end}'
   register: cmd_res
   delay: 30
