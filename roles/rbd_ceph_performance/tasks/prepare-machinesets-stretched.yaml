@@ -157,7 +157,16 @@
   pause:
     minutes: 3
 
-- name: Check 8 pvs
+- name: Show me the 8 pvs available and ready to use
+  shell:
+            cmd: |
+                 oc get pv | grep ^local-pv
+  register: pvs
+
+- debug:
+    msg: "{{ pvs.stdout_lines }}"
+
+- name: Check 8 pvs are available and ready to use
   shell:
             cmd: |
                  oc get pv  -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep ^local-pv | wc -l
@@ -168,3 +177,20 @@
             cmd: |
                  oc create -f roles/rbd_ceph_performance/templates/ODF_v47/3_odf_cluster.yml
   when: pvs.stdout | string == "8"
+
+- command: oc -n openshift-storage get pod -l name=ocs-operator -o jsonpath='{range .items[*]}{.status.containerStatuses[0].ready}{"\n"}{end}'
+  register: cmd_res
+  delay: 30
+  retries: 20
+  until: cmd_res.stdout | string == "true"
+
+- name: Show me the 8 OSD in my ODF new Cluster
+  shell:
+            cmd: |
+                 oc -n openshift-storage get pod -l app=rook-ceph-osd
+                 oc -n openshift-storage get pod -l app=rook-ceph-mon
+                 oc -n openshift-storage get pod -l app=rook-ceph-mds
+  register: pod_ocs
+
+- debug:
+    msg: "{{ pods_ocs.stdout_lines }}"
