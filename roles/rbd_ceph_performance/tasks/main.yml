@@ -40,6 +40,7 @@
           # 5 -> PARTITION OSDs on nodes with label: cluster.ocs.openshift.io/openshift-storage=    #
           # 6 -> Deploy ODF v4.7 cluster based on 2 AZs each with 2 nodes + 1 AZ with arbiter node) #
           # 7 -> HA TEST STRETCHED CLUSTER (requires ODF v4.7 and aws cli)                          #
+          # 8 -> Like 6 but with BM nodes based on i3.8xlarge instances (4 OSDs NVMe per node)      #
           ###########################################################################################
   register: benchmark
 
@@ -70,3 +71,7 @@
 - name: HA test stretched cluster
   include_tasks: ha_test.yml
   when: benchmark.user_input == "7"
+
+- name: Infra stretched cluster deployment with BM instances
+  include_tasks: prepare-machinesets-stretched-bm.yaml
+  when: benchmark.user_input == "8"
