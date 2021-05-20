@@ -136,7 +136,7 @@
 - name: Waiting for  4 ODF machines Ready
   shell:
             cmd: |
-                    oc get nodes -l cluster.ocs.openshift.io/openshift-storage='' --no-headers | grep -v NoReady | wc -l
+                    oc get nodes -l cluster.ocs.openshift.io/openshift-storage='' --no-headers | grep -v NotReady | wc -l
   register: cmd_res
   delay: 30
   retries: 20
