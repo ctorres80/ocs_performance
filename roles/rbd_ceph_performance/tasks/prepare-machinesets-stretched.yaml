@@ -193,4 +193,4 @@
   register: pod_ocs
 
 - debug:
-    msg: "{{ pods_ocs.stdout_lines }}"
+    msg: "{{ pod_ocs.stdout_lines }}"
