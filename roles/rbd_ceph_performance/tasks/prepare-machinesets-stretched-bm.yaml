@@ -160,7 +160,7 @@
 - name: Create ODF metro-cluster
   shell:
             cmd: |
-                 oc create -f roles/rbd_ceph_performance/templates/ODF_v47/3_odf_cluster.yml
+                 oc create -f roles/rbd_ceph_performance/templates/ODF_v47/3_odf_cluster_bm.yml
   when: pvs.stdout | string == "16"
 
 - name: Pause for 2 minutes to provisioning ODF pods
