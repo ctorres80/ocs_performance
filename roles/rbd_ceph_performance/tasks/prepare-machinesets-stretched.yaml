@@ -161,10 +161,10 @@
   shell:
             cmd: |
                  oc get pv | grep ^local-pv
-  register: pvs
+  register: pvshow
 
 - debug:
-    msg: "{{ pvs.stdout_lines }}"
+    msg: "{{ pvshow.stdout_lines }}"
 
 - name: Check 8 pvs are available and ready to use
   shell:
