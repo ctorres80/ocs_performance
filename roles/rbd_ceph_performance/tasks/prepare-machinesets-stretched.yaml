@@ -13,7 +13,7 @@
 - name: Export the machinesets in yaml files
   shell:
             cmd: |
-                    oc -n {{ machineset_project }} get machinesets {{ item }} -o yaml | sed -e 's/{{ item }}/ocs-worker-{{ item.split('-')[5:8] | join('-') }}/g' | sed -e 's/{{ oldinstancetype }}/{{ instancetype }}/g' > ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+                    oc -n {{ machineset_project }} get machinesets {{ item }} -o yaml | sed -e 's/{{ item }}/ocs-worker-{{ item.split('-')[5:8] | join('-') }}/g' > ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Configure label in nodes
@@ -204,14 +204,15 @@
 - name: Show me 8 OSDs 5 MONs and 2 MDS in my ODF new Cluster
   shell:
             cmd: |
-                 echo "Do you have 8 OSDs?"
+                 echo "Do you have 8 OSDs Ready?"
                  oc -n openshift-storage get pod -l app=rook-ceph-osd
-                 echo "Do you have 5 MONs?"
+                 echo "Do you have 5 MONs Ready?"
                  oc -n openshift-storage get pod -l app=rook-ceph-mon
-                 echo "Do you have 2 MDS?"
+                 echo "Do you have 2 MDS Ready?"
                  oc -n openshift-storage get pod -l app=rook-ceph-mds
-                 echo "Do you have 4 noobaa pods?"
+                 echo "Do you have 4 noobaa pods Ready?"
                  oc -n openshift-storage get pods -l app=noobaa
+                 echo "Then you're ready to enjoy OpenShift Data Foundation experience"
   register: pod_ocs
   when: cmd_res.stdout | string == "true"
 
