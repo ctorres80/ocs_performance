@@ -22,6 +22,7 @@ instancetype: 'm5.4xlarge'
 # ebs size
 ebs_size: 8192
 osds_total: 16
+partitions_total: 4
 # home directory
 home_user: "{{ ansible_env.HOME }}"
 # zones

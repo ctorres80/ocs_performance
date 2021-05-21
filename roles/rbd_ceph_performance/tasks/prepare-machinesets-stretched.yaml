@@ -151,7 +151,7 @@
 - debug:
     msg: "{{ cmd_res.stdout_lines }}"
 
-- name: Partitioning the 4TB EBS in 2x2TB
+- name: Partitioning the {{ ebs_size }} GB EBS in {{ partitions_total }} partitions
   include_tasks: partitioning.yml
 
 - name: Install LSO and OCS operators auto-discovery and local-block LocalVolumeSet
@@ -160,16 +160,16 @@
                  oc create -f roles/rbd_ceph_performance/templates/ODF_v47/2_odf_operatorv47.yml
   ignore_errors: true
 
-- name: Waiting for 8 pvs available
+- name: Waiting for {{ osds_total }} pvs available
   shell:
             cmd: |
                  oc get pv -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | wc -l
   register: cmd_res
   delay: 30
   retries: 20
-  until: cmd_res.stdout | string == "8"
+  until: cmd_res.stdout | string == "{{ osds_total }}"
 
-- name: Show me the 8 pvs available that will be our OSDs
+- name: Show me the {{ osds_total }} pvs available that will be our OSDs
   shell:
             cmd: |
                  oc get pv | grep ^local-pv
@@ -178,7 +178,7 @@
 - debug:
     msg: "{{ pvs.stdout_lines }}"
 
-- name: Check if 8 pvs are available and ready to use
+- name: Check if partitions_total pvs are available and ready to use
   shell:
             cmd: |
                  oc get pv  -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep ^local-pv | wc -l
@@ -188,7 +188,7 @@
   shell:
             cmd: |
                  oc create -f roles/rbd_ceph_performance/templates/ODF_v47/3_odf_cluster.yml
-  when: pvs.stdout | string == "8"
+  when: pvs.stdout | string == "{{ osds_total }}"
 
 - name: Pause for 2 minutes to provisioning ODF pods
   pause:
