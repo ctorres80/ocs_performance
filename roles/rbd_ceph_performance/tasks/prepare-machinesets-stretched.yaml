@@ -178,7 +178,7 @@
 - debug:
     msg: "{{ pvs.stdout_lines }}"
 
-- name: Check if partitions_total pvs are available and ready to use
+- name: Check if {{ partitions_total }} pvs are available and ready to use
   shell:
             cmd: |
                  oc get pv  -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep ^local-pv | wc -l
@@ -213,6 +213,8 @@
                  echo "Do you have 4 noobaa pods Ready?"
                  oc -n openshift-storage get pods -l app=noobaa
                  echo "Then you're ready to enjoy OpenShift Data Foundation experience"
+                 echo "Last tring I wil deploy the ceph toolbox"
+                 oc patch OCSInitialization ocsinit -n openshift-storage --type json --patch  '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]'
   register: pod_ocs
   when: cmd_res.stdout | string == "true"
 
