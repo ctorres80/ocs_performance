@@ -59,6 +59,23 @@ The tasks will take cluster configuration and automatically create the yaml for 
 - Each of the above instances are configured to use 4TB EBS volume that will be partioned with 2x2TB partitions
 - 1 vms will be deployed in a 3rd AZ with label `arbiter`
 
+First: Install ansible
+```
+sudo yum install -y ansible 
+```
+Sencond: Clone the github repo
+```
+git clone https://github.com/ctorres80/ocs_performance.git
+```
+Then move to the repo
+```
+cd ocs_performance
+```
+And now you're good to run the ansible role
+```
+ansible-playbook use_playbook.yml
+```
+
 ![ODF deployment](https://github.com/ctorres80/ocs_performance/blob/master/roles/rbd_ceph_performance/files/2.png) 
 
 There will be a pause of 6 mins, just the time to get the new instances up&running  
