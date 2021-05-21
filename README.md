@@ -52,12 +52,12 @@ cluster-c1f4-kpw7v-worker-eu-west-1a   1         1         1       1           8
 cluster-c1f4-kpw7v-worker-eu-west-1b   1         1         1       1           8d
 cluster-c1f4-kpw7v-worker-eu-west-1c   1         1         1       1           8d
 ```
-The tasks will take cluster configuration and automatically create the yaml for ocs machinesets. The final result will be 3 new machinesets:
+The provisioning infrastructure tas will take the configuration of the existing machinesets, change for an ODF node with xTB EBS and automatically create and scale machinesets. The final result will be 3 new machinesets:
 - all the vms are using instance type: m5.4xlarge
-- 2 vms will be create in AZ with label `datacenter1`
-- 2 vms will be create in AZ with label `datacenter2`
+- 2 vms will be create in AZ with label `datacenter1` then this machineset has replica=2
+- 2 vms will be create in AZ with label `datacenter2` then this machineset has replica=2
 - Each of the above instances are configured to use 4TB EBS volume that will be partioned with 2x2TB partitions
-- 1 vms will be deployed in a 3rd AZ with label `arbiter`
+- 1 vm will be deployed in a 3rd AZ with label `arbiter`
 
 First: Install ansible
 ```
