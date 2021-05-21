@@ -29,7 +29,7 @@ spec:
   storageClassName: localblock
   volumeMode: Block
   fstype: ext4
-  maxDeviceCount: 4
+  maxDeviceCount: 10
   deviceInclusionSpec:
     deviceTypes:
     - disk

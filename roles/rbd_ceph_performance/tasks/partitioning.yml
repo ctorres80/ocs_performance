@@ -3,14 +3,14 @@
     oc get nodes -l topology.kubernetes.io/zone={{ zone_1 }} -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
   register: ocs_workers
 
-- name: "I will create 2 partitions per free DISK on servers in {{ zone_1 }}"
+- name: "I will create {{ partitions_total }} partitions per free DISK on servers in {{ zone_1 }}"
   shell: |
     oc debug node/{{ item }} -- lsblk -o NAME | grep ^[a-z] | while read disk
     do
         oc debug node/{{ item }} -- sfdisk --part-type /dev/$disk 1 &> /dev/null
         if [ "$?" -gt 0 ]
         then
-                oc debug node/{{ item }} -- parted /dev/$disk -s mklabel gpt mkpart primary 1 50% mkpart primary 50% 100%
+                oc debug node/{{ item }} -- parted /dev/$disk -s mklabel gpt mkpart primary 1 25% mkpart primary 25% 50% mkpart primary 50% 75% mkpart primary 75% 100%
                 oc debug node/{{ item }} -- partprobe /dev/$disk
                 echo "/dev/$disk PARTITIONED:"
                 oc debug node/{{ item }} -- parted /dev/$disk -s p
@@ -35,14 +35,14 @@
     oc get nodes -l topology.kubernetes.io/zone={{ zone_2 }} -o jsonpath='{range .items[*]}{@.metadata.name}{"\n"}'
   register: ocs_workers
 
-- name: "I will create 2 partitions per free DISK on servers in {{ zone_2 }}"
+- name: "I will create {{ partitions_total }} partitions per free DISK on servers in {{ zone_2 }}"
   shell: |
     oc debug node/{{ item }} -- lsblk -o NAME | grep ^[a-z] | while read disk
     do
         oc debug node/{{ item }} -- sfdisk --part-type /dev/$disk 1 &> /dev/null
         if [ "$?" -gt 0 ]
         then
-                oc debug node/{{ item }} -- parted /dev/$disk -s mklabel gpt mkpart primary 1 50% mkpart primary 50% 100%
+                oc debug node/{{ item }} -- parted /dev/$disk -s mklabel gpt mkpart primary 1 25% mkpart primary 25% 50% mkpart primary 50% 75% mkpart primary 75% 100%
                 oc debug node/{{ item }} -- partprobe /dev/$disk
                 echo "/dev/$disk PARTITIONED:"
                 oc debug node/{{ item }} -- parted /dev/$disk -s p

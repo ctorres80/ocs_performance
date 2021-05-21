@@ -1,52 +1,234 @@
-﻿apiVersion: ocs.openshift.io/v1
-kind: StorageCluster
-metadata:
-  annotations:
-    cluster.ocs.openshift.io/local-devices: 'true'
-    uninstall.ocs.openshift.io/cleanup-policy: delete
-    uninstall.ocs.openshift.io/mode: graceful
-  name: ocs-storagecluster
-  namespace: openshift-storage
-  finalizers:
-    - storagecluster.ocs.openshift.io
-spec:
-  arbiter:
-    enable: true
-  encryption:
-    kms: {}
-  externalStorage: {}
-  managedResources:
-    cephBlockPools: init
-    cephConfig: {}
-    cephFilesystems: {}
-    cephObjectStoreUsers: {}
-    cephObjectStores: {}
-  monDataDirHostPath: /var/lib/rook
-  nodeTopologies:
-    arbiterLocation: eu-west-1c
-  storageDeviceSets:
-    - config: {}
-      count: 2
-      dataPVCTemplate:
-        metadata: {}
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: '1'
-          storageClassName: localblock
-          volumeMode: Block
-        status: {}
-      name: ocs-deviceset-localblock
-      placement: {}
-      preparePlacement: {}
-      replica: 4
-    resources:
-      limits:
-        cpu: 8
-        memory: 8Gi
-      requests:
-        cpu: 2
-        memory: 5Gi
-  version: 4.7.0
+﻿---
+- name: Install LSO and OCS operators
+  shell:
+            cmd: |
+             oc create -f roles/rbd_ceph_performance/templates/ODF_v47/1_odf_operatorv47.yml
+  ignore_errors: true
+- name: Collect the machinesets names
+  shell:
+            cmd: |
+              oc -n {{ machineset_project }} get machinesets -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep "^cluster"
+  register: machinesets
+
+- name: Export the machinesets in yaml files
+  shell:
+            cmd: |
+                    oc -n {{ machineset_project }} get machinesets {{ item }} -o yaml | sed -e 's/{{ item }}/ocs-worker-{{ item.split('-')[5:8] | join('-') }}/g' > ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Configure label in nodes
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    state: absent
+    regexp: '^      metadata: {}'
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: delete EBS
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    state: absent
+    regexp: '^          - ebs'
+  when: not item | string is search ("1c") or not item | string is search ("2c")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: delete replicas for osd nodes
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    state: absent
+    regexp: '^  replicas:'
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Add deviceName
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    insertafter: '^          blockDevices:'
+    line: '          - deviceName: /dev/sdc'
+  when: not item | string is search ("1c") or not item | string is search ("2c")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: replica 2 for OSD nodes
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    insertbefore: '^  selector:'
+    line: '  replicas: 2'
+  when: item | string is search ("1a") or item | string is search ("2a") or item | string is search ("1b") or item | string is search ("2b")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: replica 1 for arbiter nodes
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    insertbefore: '^  selector:'
+    line: '  replicas: 1'
+  when: item | string is search ("1c") or item | string is search ("2c")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Add EBS
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    insertafter: '^          - deviceName: /dev/sdc'
+    line: '            ebs:'
+  when: not item | string is search ("1c") or not item | string is search ("2c")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Add EBS size {{ ebs_size }}
+  lineinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    regexp: '^              volumeSize: .+'
+    line: '              volumeSize: {{ ebs_size }}'
+  when: not item | string is search ("1c")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Add ocs labels to OSD nodes to zone1
+  blockinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    insertbefore: "      providerSpec:"
+    block: |2
+            taints:
+            - effect: NoSchedule
+              key: node.ocs.openshift.io/storage
+              value: "true"
+            metadata:
+              creationTimestamp: null
+              labels:
+                node-role.kubernetes.io/infra: ""
+                topology.kubernetes.io/zone: {{ zone_1 }}
+                cluster.ocs.openshift.io/openshift-storage: ""
+  when: item | string is search ("1a") or item | string is search ("2a")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Add ocs labels to OSD nodes to zone_2
+  blockinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    insertbefore: "      providerSpec:"
+    block: |2
+            taints:
+            - effect: NoSchedule
+              key: node.ocs.openshift.io/storage
+              value: "true"
+            metadata:
+              creationTimestamp: null
+              labels:
+                node-role.kubernetes.io/infra: ""
+                topology.kubernetes.io/zone: {{ zone_2 }}
+                cluster.ocs.openshift.io/openshift-storage: ""
+  when: item | string is search ("1b") or item | string is search ("2b")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Add ocs labels to arbiter zone
+  blockinfile:
+    path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+    insertbefore: "      providerSpec:"
+    block: |2
+            metadata:
+              creationTimestamp: null
+              labels:
+                node-role.kubernetes.io/infra: ""
+                topology.kubernetes.io/zone: {{ arbiter }}
+  when: item | string is search ("1c") or item | string is search ("2c")
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Create machinesets and replicas
+  shell:
+            cmd: |
+                    oc apply -f ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
+  loop: "{{ machinesets.stdout_lines }}"
+
+- name: Waiting for 4 ODF machines Ready
+  shell:
+            cmd: |
+                    oc get nodes -l cluster.ocs.openshift.io/openshift-storage='' --no-headers | grep -v NotReady | wc -l
+  register: cmd_res
+  delay: 30
+  retries: 20
+  until: cmd_res.stdout | string == "4"
+
+- name: Show me the 4 ODF machines just created
+  shell:
+            cmd: |
+                    oc get nodes -l cluster.ocs.openshift.io/openshift-storage=''
+  register: cmd_res
+
+- debug:
+    msg: "{{ cmd_res.stdout_lines }}"
+
+- name: Partitioning the {{ ebs_size }}GB EBS in 4 partitions
+  include_tasks: partitioning.yml
+
+- name: Install LSO and OCS operators auto-discovery and local-block LocalVolumeSet
+  shell:
+            cmd: |
+                 oc create -f roles/rbd_ceph_performance/templates/ODF_v47/2_odf_operatorv47.yml
+  ignore_errors: true
+
+- name: Waiting for {{ osds_total }} pvs available
+  shell:
+            cmd: |
+                 oc get pv -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | wc -l
+  register: cmd_res
+  delay: 30
+  retries: 20
+  until: cmd_res.stdout | string == "{{ osds_total }}"
+
+- name: Show me the {{ osds_total }}  pvs available that will be our OSDs
+  shell:
+            cmd: |
+                 oc get pv | grep ^local-pv
+  register: pvs
+
+- debug:
+    msg: "{{ pvs.stdout_lines }}"
+
+- name: Check if {{ osds_total }} pvs are available and ready to use
+  shell:
+            cmd: |
+                 oc get pv  -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep ^local-pv | wc -l
+  register: pvs
+
+- name: Create ODF metro-cluster
+  shell:
+            cmd: |
+                 oc create -f roles/rbd_ceph_performance/templates/ODF_v47/3_odf_cluster.yml
+  when: pvs.stdout | string == "{{ osds_total }}"
+
+- name: Pause for 2 minutes to provisioning ODF pods
+  pause:
+    minutes: 2
+
+- name: Waiting for Operator ocs-operator Ready...
+  command: oc -n openshift-storage get pod -l name=ocs-operator -o jsonpath='{range .items[*]}{.status.containerStatuses[0].ready}{"\n"}{end}'
+  register: cmd_res
+  delay: 30
+  retries: 20
+  until: cmd_res.stdout | string == "true"
+
+- name: Show me the ODF services
+  shell:
+            cmd: |
+                 echo "Do you have {{ osds_total }} OSDs Ready?"
+                 oc -n openshift-storage get pod -l app=rook-ceph-osd
+                 echo "Do you have 5 MONs Ready?"
+                 oc -n openshift-storage get pod -l app=rook-ceph-mon
+                 echo "Do you have 2 MDS Ready?"
+                 oc -n openshift-storage get pod -l app=rook-ceph-mds
+                 echo "Do you have 4 noobaa pods Ready?"
+                 oc -n openshift-storage get pods -l app=noobaa
+                 echo "Then you're ready to enjoy OpenShift Data Foundation experience"
+                 echo "Last thin I will deploy the toolbox"
+                 oc patch OCSInitialization ocsinit -n openshift-storage --type json --patch  '[{ "op": "replace", "path": "/spec/enableCephTools", "value": true }]'
+  register: pod_ocs
+  when: cmd_res.stdout | string == "true"
+
+- debug:
+    msg: "{{ pod_ocs.stdout_lines }}"
+
+- name: Hey look ODF is up&running
+  pause:
+    seconds: 10
+  when: cmd_res.stdout | string == "true"
+
+- name: Delete yaml files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob:
+    - "./*.yaml"
