@@ -28,7 +28,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     state: absent
     regexp: '^          - ebs'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
+  when: not item | string is search (".*-1c") or not item | string is search (".*-2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: delete replicas for osd nodes
@@ -43,7 +43,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertafter: '^          blockDevices:'
     line: '          - deviceName: /dev/sdc'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
+  when: not item | string is search (".*-1c") or not item | string is search (".*-2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: replica 2 for OSD nodes
@@ -51,7 +51,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertbefore: '^  selector:'
     line: '  replicas: 2'
-  when: item | string is search ("1a") or item | string is search ("2a") or item | string is search ("1b") or item | string is search ("2b")
+  when: item | string is search (".*-1a") or item | string is search (".*-2a") or item | string is search (".*-1b") or item | string is search (".*-2b")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: replica 1 for arbiter nodes
@@ -59,7 +59,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertbefore: '^  selector:'
     line: '  replicas: 1'
-  when: item | string is search ("1c") or item | string is search ("2c")
+  when: item | string is search (".*-1c") or item | string is search (".*-2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add EBS
@@ -67,7 +67,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     insertafter: '^          - deviceName: /dev/sdc'
     line: '            ebs:'
-  when: not item | string is search ("1c") or not item | string is search ("2c")
+  when: not item | string is search (".*-1c") or not item | string is search (".*-2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add EBS size {{ ebs_size }}
@@ -75,7 +75,7 @@
     path: ./ocs-worker-{{ item.split('-')[5:8] | join('-') }}.yaml
     regexp: '^              volumeSize: .+'
     line: '              volumeSize: {{ ebs_size }}'
-  when: not item | string is search ("1c")
+  when: not item | string is search (".*-1c") or not item | string is search (".*-2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add ocs labels to OSD nodes to zone1
@@ -93,7 +93,7 @@
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ zone_1 }}
                 cluster.ocs.openshift.io/openshift-storage: ""
-  when: item | string is search ("1a") or item | string is search ("2a")
+  when: item | string is search (".*-1a") or item | string is search (".*-2a")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add ocs labels to OSD nodes to zone_2
@@ -111,7 +111,7 @@
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ zone_2 }}
                 cluster.ocs.openshift.io/openshift-storage: ""
-  when: item | string is search ("1b") or item | string is search ("2b")
+  when: item | string is search (".*-1b") or item | string is search (".*-2b")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Add ocs labels to arbiter zone
@@ -124,7 +124,7 @@
               labels:
                 node-role.kubernetes.io/infra: ""
                 topology.kubernetes.io/zone: {{ arbiter }}
-  when: item | string is search ("1c") or item | string is search ("2c")
+  when: item | string is search (".*-1c") or item | string is search (".*-2c")
   loop: "{{ machinesets.stdout_lines }}"
 
 - name: Create machinesets and replicas
