@@ -1,6 +1,6 @@
 - shell: |
     export KUBECONFIG={{ kubeconfig }}
-    oc get sc -o jsonpath='{range .items[*]}{"Storage Class: "}{@.metadata.name}{" |-> Provisioner: "}{@.provisioner}{"\n"}' | egrep "openshift-storage.rbd.csi.ceph.com|openshift-storage.cephfs.csi.ceph.com"
+    oc get sc -o jsonpath='{range .items[*]}{"Storage Class: "}{@.metadata.name}{" |-> Provisioner: "}{@.provisioner}{"\n"}' | egrep "openshift-storage.rbd.csi.ceph.com|openshift-storage.cephfs.csi.ceph.com|thin"
   register: ocs_storage_classes
 - debug:
         msg:
@@ -20,7 +20,7 @@
     path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
     regexp: '^        - ReadWrite'
     line: '        - ReadWriteOnce'
-  when: ocs_storage_provisioner.stdout == "openshift-storage.rbd.csi.ceph.com"
+  when: ocs_storage_provisioner.stdout == "openshift-storage.rbd.csi.ceph.com" or ocs_storage_provisioner.stdout == "thin"
 - name: 'Modify statefulset for file accordingly'
   lineinfile:
     path: roles/rbd_ceph_performance/templates/fio-statefulset.yml
